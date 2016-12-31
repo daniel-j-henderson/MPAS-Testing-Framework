@@ -30,41 +30,42 @@ def test(tparams):
 	utils = env.get('utils')
 
 	if not env:
-		print("No environment object passed to Restartability test, quitting Restartability test")
+		print('No environment object passed to Restartability test, quitting Restartability test')
 		return None
 	if not utils:
-		print("No utils module in test environment, quitting Restartability test")
+		print('No utils module in test environment, quitting Restartability test')
 		return None
 
 
 	res = utils.Result()
 
-	test_dir = tparams["test_dir"] # file path of src code, absolute
-	my_dir = tparams["pwd"]+"/restartability"
-	my_config_files_A = my_dir+"/filesA"
-	my_config_files_B = my_dir+"/filesB"
-	working_dir = my_dir+"/working"
+	test_dir = tparams['test_dir'] # file path of src code, absolute
+	my_dir = tparams['pwd']+'/restartability'
+	my_config_files_A = my_dir+'/filesA'
+	my_config_files_B = my_dir+'/filesB'
+	working_dir = my_dir+'/working'
 
-	os.system("rm -r "+working_dir)
-	os.system("mkdir "+working_dir)
+	os.system('rm -r '+working_dir)
+	os.system('mkdir '+working_dir)
 	utils.linkAllFiles(my_config_files_A, test_dir)
 	utils.runModel(test_dir, nprocs, env)
 
-	os.system("mv "+test_dir+"/restart.* "+working_dir)
-	os.system("rm "+test_dir+"/*.nc")
+	os.system('mv '+test_dir+'/restart.* '+working_dir)
+	os.system('rm '+test_dir+'/*.nc')
 	utils.linkAllFiles(my_config_files_B, test_dir)
-	os.system("ln -s "+working_dir+"/restart.2014-09-11_00.00.00.nc "+test_dir)
+	os.system('ln -s '+working_dir+'/restart.2014-09-11_00.00.00.nc '+test_dir)
 	utils.runModel(test_dir, nprocs, env)
 
-	diff = utils.compareFiles(working_dir+"/restart.2014-09-12_00.00.00.nc", test_dir+"/restart.2014-09-12_00.00.00.nc", env)
+	diff = utils.compareFiles(working_dir+'/restart.2014-09-12_00.00.00.nc', test_dir+'/restart.2014-09-12_00.00.00.nc', env)
 
-	res.attributes["success"] = (len(diff.getAttribute("diff_fields")) == 0)
-	# if not res.attributes["success"]:
+	res.set('success', len(diff.get('diff_fields')) == 0)
+	# res.set('success', True)
+	# if not res.attributes['success']:
 		# put in a debug folder all the files necessary to debug the reason why the test failed
-	os.system("rm "+test_dir+"/*.nc")
-	os.system("rm -r "+working_dir)
-	if not res.attributes["success"]:
-		res.attributes["err"] = diff.getAttribute("diff_fields")
-	res.attributes["name"] = "Restartability Test"
-	res.attributes["completed_test"] = True
+	os.system('rm '+test_dir+'/*.nc')
+	os.system('rm -r '+working_dir)
+	if not res.get('success'):
+		res.set('err', diff.get('diff_fields'))
+	res.set('name', 'Restartability Test')
+	res.set('completed_test', True)
 	return res
