@@ -1,2 +1,5 @@
 <?xml version="1.0"?>
-<environment test_dir="../MPAS-Release" name="mmm" machine="cocobolo" pathSL="/sysdisk2/hendersn/Standard-Library/" PYTHONPATH="/Users/hendersn/Helpful_Programs/lib/python2.7/site-packages/"/>
+<environment test_dir="../MPAS-Release" name="mmm" machine="cocobolo" batchsystem="none" pathSL="/sysdisk2/hendersn/Standard-Library/" PYTHONPATH="/Users/hendersn/Helpful_Programs/lib/python2.7/site-packages/"/>
+
+<!-- Eventually these xml files will tell the test driver if the environment is an LSF system and if so how many total processors may be used at a time/project code/other useful things, as well as all the required info to run jobs on Cheyenne or other clusters -->
+<!-- XML may not be the best format for this information but it was the first thing that came to mind -->
