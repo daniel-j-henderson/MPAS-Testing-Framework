@@ -6,35 +6,68 @@ class Result:
 		self.attributes = {}
 
 	def get(self, attname):
-		return self.attributes[attname]
+		try:
+			return self.attributes[attname]
+		except KeyError:
+			return None
 
 	def set(self, attname, value):
 		self.attributes[attname] = value
 		return
 
+ENVLSF = 1
 class Environment:
-	params = {}
+
+	def __init__(self):
+		self.params = {}
 
 	def get(self, pname):
-		return self.params[pname]
+		try:
+			return self.params[pname]
+		except KeyError:
+			return None
+
 	def set(self, pname, value):
 		self.params[pname] = value
 		return
 
-def runModel(dir, n, env):
+def runAtmosphereModel(dir, n, env, options={}):
 
-	if env.get('name') != 'mmm':
-		print('Trying to run model in '+env.get('name')+' environment which is not yet supported')
-		return False
+#	if env.get('name') != 'mmm':
+#		print('Trying to run model in '+env.get('name')+' environment which is not yet supported')
+#		return False
 
 	if (not os.path.isdir(dir)):
 		print('Invalid directory supplied to runModel: ' + dir)
 		return False
 	popdir = os.getcwd()
 	os.chdir(dir)
-	
-	cmd = 'mpirun -n '+str(n)+' ./atmosphere_model'
-	print(cmd)
+
+	exename = 'atmosphere_model'
+
+	# Untested, since YS is down right now
+	if env.get('name') == 'yellowstone' or env.get('type') == ENVLSF:
+		print('Running on Yellowstone')
+		args = []
+		for o, l in env.get('lsf_options'):
+			if o in options:
+				continue
+			for v in l:
+				args.append(str(o) + ' ' + str(v))
+		for o, l in options:
+			for v in l:
+				args.append(str(o), + ' ' + str(v))
+
+		cmd = 'bsub -n ' + str(n) + ' '
+		for option in args:
+			cmd += option + ' '
+		cmd += 'mpirun.lsf ./'+exename
+		print(cmd)
+
+	elif env.get('name') == 'mmm':
+		cmd = 'mpirun -n '+str(n)+' ./'+exename
+		print(cmd)
+
 	err = os.system(cmd)
 	if (err):
 		print('error running mpas in '+dir+', error code '+str(err))
@@ -57,6 +90,15 @@ def compareFiles(a, b, env):
 	r = Result()
 	r.attributes['diff_fields'] = []
 	r.attributes['num_diffs'] = []
+
+	files = os.listdir('.')
+	if a not in files:
+		print(str(a)+': File not found, cannot compare to '+str(b))
+		return False
+	if b not in files:
+		print(str(b)+': File not found, cannot compare to '+str(a))
+		return False
+		
 
 	f1 = nc.Dataset(a, 'a')
 	f2 = nc.Dataset(b, 'r')

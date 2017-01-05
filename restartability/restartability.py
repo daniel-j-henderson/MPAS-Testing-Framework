@@ -1,7 +1,6 @@
 from __future__ import print_function
 import os, sys
 
-# takes arguments of test src code directory, init file, supporting files(namelist, streams, graph.info)
 # performs baseline 2 day run and outputs restart files every day
 # moves all files that run created into subdirectory
 # copies in new supporting files for restart run
@@ -29,15 +28,17 @@ def test(tparams):
 	env = tparams['env']
 	utils = env.get('utils')
 
+	res = utils.Result()
+	res.set('completed_test', False)
+	res.set('name', 'Restartability Test')
+
 	if not env:
 		print('No environment object passed to Restartability test, quitting Restartability test')
-		return None
+		return res
 	if not utils:
 		print('No utils module in test environment, quitting Restartability test')
-		return None
+		return res
 
-
-	res = utils.Result()
 
 	test_dir = tparams['test_dir'] # file path of src code, absolute
 	my_dir = tparams['pwd']+'/restartability'
@@ -45,27 +46,29 @@ def test(tparams):
 	my_config_files_B = my_dir+'/filesB'
 	working_dir = my_dir+'/working'
 
+	# Perform 2-day run A
 	os.system('rm -r '+working_dir)
 	os.system('mkdir '+working_dir)
 	utils.linkAllFiles(my_config_files_A, test_dir)
-	utils.runModel(test_dir, nprocs, env)
+	utils.runAtmosphereModel(test_dir, nprocs, env)
 
+	# Perform 1-day run B as a restart of run A
 	os.system('mv '+test_dir+'/restart.* '+working_dir)
 	os.system('rm '+test_dir+'/*.nc')
 	utils.linkAllFiles(my_config_files_B, test_dir)
 	os.system('ln -s '+working_dir+'/restart.2014-09-11_00.00.00.nc '+test_dir)
-	utils.runModel(test_dir, nprocs, env)
+	utils.runAtmosphereModel(test_dir, nprocs, env)
 
 	diff = utils.compareFiles(working_dir+'/restart.2014-09-12_00.00.00.nc', test_dir+'/restart.2014-09-12_00.00.00.nc', env)
+	if not diff:
+		return res
 
 	res.set('success', len(diff.get('diff_fields')) == 0)
-	# res.set('success', True)
 	# if not res.attributes['success']:
 		# put in a debug folder all the files necessary to debug the reason why the test failed
 	os.system('rm '+test_dir+'/*.nc')
 	os.system('rm -r '+working_dir)
 	if not res.get('success'):
 		res.set('err', diff.get('diff_fields'))
-	res.set('name', 'Restartability Test')
 	res.set('completed_test', True)
 	return res
