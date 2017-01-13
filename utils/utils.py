@@ -15,9 +15,12 @@ class Result:
 		self.attributes[attname] = value
 		return
 
-ENVLSF = 1
 class Environment:
 
+	NONE = 0
+	ENVLSF = 1
+	ENVPBS = 2
+	
 	def __init__(self):
 		self.params = {}
 
@@ -46,7 +49,7 @@ def runAtmosphereModel(dir, n, env, options={}):
 	exename = 'atmosphere_model'
 	# exename = 'toy'
 
-	if env.get('name') == 'yellowstone' or env.get('type') == ENVLSF:
+	if env.get('name') == 'yellowstone' or env.get('type') == Environment.ENVLSF:
 		print('Running on Yellowstone')
 		args = []
 		lsf_options = env.get('lsf_options')
@@ -65,16 +68,20 @@ def runAtmosphereModel(dir, n, env, options={}):
 		cmd += 'mpirun.lsf ./'+exename
 		print(cmd)
 
-	elif env.get('name') == 'mmm':
+	elif env.get('type') == Environment.ENVPBS:
+		print('Running on '+env.get('name')+', a PBS system.')
+		cmd = ''
+
+	elif env.get('name') == 'mmm' or env.get('type') == Environment.NONE:
 		cmd = 'mpirun -n '+str(n)+' ./'+exename
 		print(cmd)
 
 	completed = False
 	err = os.system(cmd)
 	if (err):
-		print('error running mpas in '+dir+', error code '+str(err))
+		print('error running '+exename+' in '+dir+', error code '+str(err))
 	else:
-		completed = True
+		completed = True	
 	os.chdir(popdir)
 	return completed, err
 
@@ -101,7 +108,7 @@ def compareFiles(a, b, env):
 		return False
 		
 
-	f1 = nc.Dataset(a, 'a')
+	f1 = nc.Dataset(a, 'r')
 	f2 = nc.Dataset(b, 'r')
 
 	for k in f1.variables.keys():
