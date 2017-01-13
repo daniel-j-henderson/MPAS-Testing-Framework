@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<environment name="yellowstone" batchsystem="LSF" pathSL="/glade/scratch/hendersn/Standard-Library/"> 
+	<lsf_option name="-P" value="P64000101"/>
+	<lsf_option name="-q" value="regular"/>
+</environment>
+

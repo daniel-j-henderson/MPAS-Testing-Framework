@@ -31,13 +31,25 @@ if root.get('PYTHONPATH'):
 	os.environ['PYTHONPATH'] = root.get('PYTHONPATH')
 
 
+# Depending on the batch system, put the necessary options (things like
+# project codes or queue names) in the environment object in a dict
+if root.get('batchsystem') == 'LSF':
+	env.set('batchsystem', 'LSF')
+	options = {}
+	for lsf_option in root.findall('lsf_option'):
+		options[lsf_option.get('name')] = lsf_option.get('value')
+	env.set('lsf_options', options)
+	print(options)
+
 
 if pkgutil.find_loader('netCDF4'):
 	nc = ilib.import_module('netCDF4')
+	print("Found netCDF module")
 else:
 	nc = None
 if pkgutil.find_loader('numpy'):
 	np = ilib.import_module('numpy')
+	print("Found numpy module")
 else:
 	np = None
 
@@ -71,8 +83,14 @@ for subdir in os.listdir('.'):
 		continue
 	if subdir[0] == '.' or 'test_driver' in subdir or 'utils' in subdir or 'results' in subdir or '.xml' in subdir:
 		continue
-	mod = ilib.import_module(subdir+'.'+subdir)
+	try:
+		mod = ilib.import_module(subdir+'.'+subdir)
+	except ImportError:
+		print("'"+subdir+"' is not a test module, skipping it")
+		continue
 	
+	print("\nRunning "+subdir+" test\n\n")
+
 	prec = mod.setup(tparams)
 	if 'files' in prec:
 		files = prec['files']

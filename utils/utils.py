@@ -44,19 +44,20 @@ def runAtmosphereModel(dir, n, env, options={}):
 	os.chdir(dir)
 
 	exename = 'atmosphere_model'
+	# exename = 'toy'
 
-	# Untested, since YS is down right now
 	if env.get('name') == 'yellowstone' or env.get('type') == ENVLSF:
 		print('Running on Yellowstone')
 		args = []
-		for o, l in env.get('lsf_options'):
-			if o in options:
+		lsf_options = env.get('lsf_options')
+		print(lsf_options)
+		for key, value in lsf_options.items():
+			print key, value
+			if key in options:
 				continue
-			for v in l:
-				args.append(str(o) + ' ' + str(v))
-		for o, l in options:
-			for v in l:
-				args.append(str(o), + ' ' + str(v))
+			args.append(str(key) + ' ' + str(value))
+		for key, value in options.items():
+			args.append(str(key) + ' ' + str(value))
 
 		cmd = 'bsub -n ' + str(n) + ' '
 		for option in args:
@@ -68,13 +69,14 @@ def runAtmosphereModel(dir, n, env, options={}):
 		cmd = 'mpirun -n '+str(n)+' ./'+exename
 		print(cmd)
 
+	completed = False
 	err = os.system(cmd)
 	if (err):
 		print('error running mpas in '+dir+', error code '+str(err))
-		os.chdir(popdir)
-		return False
+	else:
+		completed = True
 	os.chdir(popdir)
-	return True
+	return completed, err
 
 
 def compareFiles(a, b, env):
@@ -91,11 +93,10 @@ def compareFiles(a, b, env):
 	r.attributes['diff_fields'] = []
 	r.attributes['num_diffs'] = []
 
-	files = os.listdir('.')
-	if a not in files:
+	if not os.path.isfile(a):
 		print(str(a)+': File not found, cannot compare to '+str(b))
 		return False
-	if b not in files:
+	if not os.path.isfile(b):
 		print(str(b)+': File not found, cannot compare to '+str(a))
 		return False
 		
@@ -212,14 +213,15 @@ def writeReportTex(f, results):
 	f.write('\n')
 	f.write('\\section{Successful Tests}\n')
 	for r in results:
-		print(r.attributes)
-		if not r.get('success'):
-			continue
-		f.write('\\subsection{'+r.get('name')+'}\n')
-		f.write('\\begin{tabular}{|p{.3\\textwidth-2\\tabcolsep} |p{.7\\textwidth-2\\tabcolsep} |} \\hline\n')
-		for k, v in r.attributes.items():
-			f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
-		f.write('\\end{tabular}\n')
+		if r.attributes:
+			print(r.attributes)
+			if not r.get('success'):
+				continue
+			f.write('\\subsection{'+r.get('name')+'}\n')
+			f.write('\\begin{tabular}{|p{.3\\textwidth-2\\tabcolsep} |p{.7\\textwidth-2\\tabcolsep} |} \\hline\n')
+			for k, v in r.attributes.items():
+				f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
+			f.write('\\end{tabular}\n')
 	f.write('\\section{Failed Tests}\n')
 	for r in results:
 		if r.get('success'):

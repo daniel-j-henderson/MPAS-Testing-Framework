@@ -50,17 +50,31 @@ def test(tparams):
 	os.system('rm -r '+working_dir)
 	os.system('mkdir '+working_dir)
 	utils.linkAllFiles(my_config_files_A, test_dir)
-	utils.runAtmosphereModel(test_dir, nprocs, env)
+	err = utils.runAtmosphereModel(test_dir, nprocs, env, {'-K':'', '-W':'0:05'})
+	
+	if not err[0]:
+		res.set('success', False)
+		res.set('err_code', err[1])
+		res.set('err_msg', 'Initial run (run A) failed to run properly.')
+		return res
 
 	# Perform 1-day run B as a restart of run A
 	os.system('mv '+test_dir+'/restart.* '+working_dir)
 	os.system('rm '+test_dir+'/*.nc')
 	utils.linkAllFiles(my_config_files_B, test_dir)
-	os.system('ln -s '+working_dir+'/restart.2014-09-11_00.00.00.nc '+test_dir)
-	utils.runAtmosphereModel(test_dir, nprocs, env)
+	os.system('ln -s '+working_dir+'/restart.2010-10-24_00.00.00.nc '+test_dir)
+	err = utils.runAtmosphereModel(test_dir, nprocs, env, {'-K':'', '-W':'0:05'})
+	
+	if not err[0]:
+		res.set('success', False)
+		res.set('err_code', err[1])
+		res.set('err_msg', 'Initial run (run A) failed to run properly.')
+		return res
+	
 
-	diff = utils.compareFiles(working_dir+'/restart.2014-09-12_00.00.00.nc', test_dir+'/restart.2014-09-12_00.00.00.nc', env)
+	diff = utils.compareFiles(working_dir+'/restart.2010-10-25_00.00.00.nc', test_dir+'/restart.2010-10-25_00.00.00.nc', env)
 	if not diff:
+		res.set('err_msg', 'File comparison failed to run.')
 		return res
 
 	res.set('success', len(diff.get('diff_fields')) == 0)

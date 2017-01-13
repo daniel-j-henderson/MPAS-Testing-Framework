@@ -1,6 +1,7 @@
 &nhyd_model
+    config_time_integration_order = 2
     config_dt = 2880.0
-    config_start_time = '2014-09-10_00:00:00'
+    config_start_time = '2010-10-23_00:00:00'
     config_run_duration = '2_00:00:00'
     config_split_dynamics_transport = true
     config_number_of_sub_steps = 2
@@ -26,9 +27,8 @@
     config_monotonic = true
     config_coef_3rd_order = 0.25
     config_epssm = 0.1
-    config_smdiv = 0.1
-    config_newpx = false
-    config_h_ScaleWithMesh = true
+    config_smdiv = 0.025
+    config_smdiv_p_forward = 0.1
 /
 &damping
     config_zd = 22000.0
@@ -46,6 +46,11 @@
 /
 &printout
     config_print_global_minmax_vel = true
+    config_print_detailed_minmax_vel = false
+/
+&IAU
+    config_IAU_option = 'off'
+    config_IAU_window_length_s = 21600.
 /
 &physics
     config_sst_update = false
@@ -55,4 +60,7 @@
     config_radtsw_interval = '00:30:00'
     config_bucket_update = 'none'
     config_physics_suite = 'mesoscale_reference'
+/
+&soundings
+    config_sounding_interval = 'none'
 /
