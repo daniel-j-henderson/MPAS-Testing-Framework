@@ -34,7 +34,9 @@ class Environment:
 		self.params[pname] = value
 		return
 
-def runAtmosphereModel(dir, n, env, options={}):
+
+
+def runAtmosphereModel(dir, exename, n, env, add_lsfoptions={}):
 
 #	if env.get('name') != 'mmm':
 #		print('Trying to run model in '+env.get('name')+' environment which is not yet supported')
@@ -46,20 +48,14 @@ def runAtmosphereModel(dir, n, env, options={}):
 	popdir = os.getcwd()
 	os.chdir(dir)
 
-	exename = 'atmosphere_model'
-	# exename = 'toy'
-
 	if env.get('name') == 'yellowstone' or env.get('type') == Environment.ENVLSF:
-		print('Running on Yellowstone')
 		args = []
 		lsf_options = env.get('lsf_options')
-		print(lsf_options)
 		for key, value in lsf_options.items():
-			print key, value
-			if key in options:
+			if key in add_lsfoptions:
 				continue
 			args.append(str(key) + ' ' + str(value))
-		for key, value in options.items():
+		for key, value in add_lsfoptions.items():
 			args.append(str(key) + ' ' + str(value))
 
 		cmd = 'bsub -n ' + str(n) + ' '
@@ -142,25 +138,6 @@ def searchForFile(tag, name, relpath):
 				return True
 	return False
 
-# def retrieveFileFromWebSL(name, dest, env):
-# 	import xml.etree.ElementTree as ET
-
-# 	# temp_dir = '__temp__/'
-# 	# os.system('mkdir '+temp_dir)
-# 	#env.pathWebSL = 'www2.mmm.ucar.edu/.../Standard-Library/'
-# 	#download Library.xml to temp
-# 	#parse 
-
-# 	# name_zipped = name+'.tar.gz'
-# 	# repath = []
-# 	# found = searchForFile(root, name_zipped, relpath)
-
-# 	# download file
-# 	# unzip if necessary
-# 	# move to correct spot
-# 	# remove temp folder
-# 	return 0
-
 
 def retrieveFileFromSL(name, dest, env):
 	import xml.etree.ElementTree as ET
@@ -215,17 +192,16 @@ def translate(string):
 	
 def writeReportTex(f, results):
 
-	preamble = '\\documentclass[a4paper]{article} \n\\usepackage[english]{babel} \n\\usepackage[utf8x]{inputenc} \n\\usepackage{graphicx}\n\\usepackage[T1]{fontenc} \n\\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\usepackage[colorinlistoftodos]{todonotes} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
+	preamble = '\\documentclass[a4paper]{article} \n\\usepackage[english]{babel} \n\\usepackage[utf8x]{inputenc} \n\\usepackage{graphicx}\n\\usepackage[T1]{fontenc} \n\\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
 	f.write(preamble)
 	f.write('\n')
 	f.write('\\section{Successful Tests}\n')
 	for r in results:
 		if r.attributes:
-			print(r.attributes)
 			if not r.get('success'):
 				continue
 			f.write('\\subsection{'+r.get('name')+'}\n')
-			f.write('\\begin{tabular}{|p{.3\\textwidth-2\\tabcolsep} |p{.7\\textwidth-2\\tabcolsep} |} \\hline\n')
+			f.write('\\begin{tabular}{|p{.3\\textwidth} |p{.7\\textwidth} |} \\hline\n')
 			for k, v in r.attributes.items():
 				f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
 			f.write('\\end{tabular}\n')
@@ -234,7 +210,7 @@ def writeReportTex(f, results):
 		if r.get('success'):
 			continue
 		f.write('\\subsection{'+r.get('name')+'}\n')
-		f.write('\\begin{tabular}{|p{.3\\textwidth-2\\tabcolsep} |p{.7\\textwidth-2\\tabcolsep} |} \\hline\n')
+		f.write('\\begin{tabular}{|p{.3\\textwidth} |p{.7\\textwidth} |} \\hline\n')
 		for k, v in r.attributes.items():
 			f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
 		f.write('\\end{tabular}\n')
