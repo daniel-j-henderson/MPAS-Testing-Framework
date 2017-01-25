@@ -35,22 +35,68 @@ class Environment:
 		return
 
 
+class modelThread(threading.Thread):
+   
+	def __init__(self, pre=None, post=None, main=None, nprocs=1, args={}):
+		threading.Thread.__init__(self)
+		self.main = main
+		self.pre = pre
+		self.post = post
+		self.num_procs = nprocs
+		self.finished = False
+		self.args = args
+		self.result = None
+		self.ready = False
 
-def runAtmosphereModel(dir, exename, n, env, add_lsfoptions={}):
+	def run(self):
+		self.pre(self.args['dir'])
+		self.started = True
+		self.result = self.main(self.args)
+		self.post(self.args['dest'])
+		self.finished = True
+		
+	def has_started(self):
+		return self.started
 
-#	if env.get('name') != 'mmm':
-#		print('Trying to run model in '+env.get('name')+' environment which is not yet supported')
-#		return False
+	def is_finished(self):
+		return self.finished
 
+	def get_num_procs(self):
+		return self.num_procs
+
+def runModelNonblocking(dir, exename, n, env, dest, add_lsfoptions={}, add_pbsoptions{}):
+	t = modelThread(pre=setupModelRun, post=returnFromModelRun, main=__runModelNonblocking__, nprocs = n, args={'dir':dir, 'exename':exename, 'n':n, 'env':env, 'dest':dest, 'add_lsfoptions':add_lsfoptions, 'add_pbsoptions':add_pbsoptions})
+	t.start()
+	return t 
+
+def runModelBlocking(dir, exename, n, env, add_lsfoption={}, add_pbsoptions={}):
+	popdir = setupModelRun(dir)
+	r = runModel(dir, exename, n, env, add_lsfoption={}, add_pbsoptions={})
+	returnFromModelRun(popdir)	
+	return r
+
+def setupModelRun(dir):
 	if (not os.path.isdir(dir)):
 		print('Invalid directory supplied to runModel: ' + dir)
 		return False
 	popdir = os.getcwd()
 	os.chdir(dir)
+	return popdir
+
+def returnFromModelRun(dir):
+	os.chdir(popdir)
+
+def runModel(dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}):
+
+#	if env.get('name') != 'mmm':
+#		print('Trying to run model in '+env.get('name')+' environment which is not yet supported')
+#		return False
+
 
 	if env.get('name') == 'yellowstone' or env.get('type') == Environment.ENVLSF:
 		args = []
 		lsf_options = env.get('lsf_options')
+		lsf_options['-K'] = ''
 		for key, value in lsf_options.items():
 			if key in add_lsfoptions:
 				continue
@@ -78,7 +124,6 @@ def runAtmosphereModel(dir, exename, n, env, add_lsfoptions={}):
 		print('error running '+exename+' in '+dir+', error code '+str(err))
 	else:
 		completed = True	
-	os.chdir(popdir)
 	return completed, err
 
 
