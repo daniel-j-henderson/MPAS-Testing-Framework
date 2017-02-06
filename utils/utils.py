@@ -1,4 +1,6 @@
 import os, sys
+import threading, multiprocessing
+import multiprocessing.managers as mm
 
 class Result:
 	
@@ -34,26 +36,36 @@ class Environment:
 		self.params[pname] = value
 		return
 
+class ResultManager(mm.BaseManager):
+   pass
 
-class modelThread(threading.Thread):
+ResultManager.register('Result', Result)
+
+class modelProcess(multiprocessing.Process):
    
-	def __init__(self, pre=None, post=None, main=None, nprocs=1, args={}):
-		threading.Thread.__init__(self)
+	def __init__(self, pre=None, post=None, main=None, nprocs=1, args={}, result = None):
+		#threading.Thread.__init__(self)
+		multiprocessing.Process.__init__(self)
 		self.main = main
 		self.pre = pre
 		self.post = post
 		self.num_procs = nprocs
 		self.finished = False
+		self.result = result
 		self.args = args
-		self.result = None
-		self.ready = False
+		self.started= False
 
 	def run(self):
 		self.pre(self.args['dir'])
 		self.started = True
-		self.result = self.main(self.args)
+		res = self.main(self.args)
+		self.result.set('completed', res[0])
+		self.result.set('err_code', res[1])
 		self.post(self.args['dest'])
 		self.finished = True
+
+	def get_result(self):
+		return self.result
 		
 	def has_started(self):
 		return self.started
@@ -64,17 +76,65 @@ class modelThread(threading.Thread):
 	def get_num_procs(self):
 		return self.num_procs
 
-def runModelNonblocking(dir, exename, n, env, dest, add_lsfoptions={}, add_pbsoptions{}):
-	t = modelThread(pre=setupModelRun, post=returnFromModelRun, main=__runModelNonblocking__, nprocs = n, args={'dir':dir, 'exename':exename, 'n':n, 'env':env, 'dest':dest, 'add_lsfoptions':add_lsfoptions, 'add_pbsoptions':add_pbsoptions})
-	t.start()
-	return t 
+class modelRun:
+	def __init__(self, dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}): 
+		self.run_dir = dir
+		self.exename = exename
+		self.n_tasks = n
+		self.env = env
+		self.add_lsfoptions = add_lsfoptions
+		self.add_pbsoptions = add_pbsoptions
+		self.started = False
+		self.finished = False
+		self.t = None
+		self.result_manager = None
 
-def runModelBlocking(dir, exename, n, env, add_lsfoption={}, add_pbsoptions={}):
-	popdir = setupModelRun(dir)
-	r = runModel(dir, exename, n, env, add_lsfoption={}, add_pbsoptions={})
-	returnFromModelRun(popdir)	
-	return r
+	def runModelNonblocking(self):
+		self.result_manager = ResultManager()
+		self.result_manager.start()
+		self.result = self.result_manager.Result() 
+		self.t = modelProcess(pre=setupModelRun, post=returnFromModelRun, main=__runModelNonblocking__, nprocs = self.n_tasks, args={'dir':self.run_dir, 'exename':self.exename, 'n':self.n_tasks, 'env':self.env, 'dest':self.run_dir, 'add_lsfoptions':self.add_lsfoptions, 'add_pbsoptions':self.add_pbsoptions}, result = self.result)
+		self.started = True
+		self.t.start()
+		return True 
 
+	def runModelBlocking(self):
+		self.started = True
+		popdir = setupModelRun(self.run_dir)
+		r = runModel(self.run_dir, self.exename, self.n_tasks, self.env, add_lsfoptions=self.add_lsfoptions, add_pbsoptions=self.add_pbsoptions)
+		self.result = Result()
+		self.result.set('completed', r[0])
+		self.result.set('err_code', r[1])
+		returnFromModelRun(popdir)	
+		self.finished = True
+		return True
+
+	def has_started(self):
+		return self.started
+
+	def is_finished(self):
+		if not self.started:
+			return False	
+		if self.t:
+			self.finished = not self.t.is_alive()
+		return self.finished
+
+	def get_result(self):
+		if self.result_manager:
+			return self.result._getvalue()
+		else:
+			return self.result
+
+	def terminate(self):
+		if not self.has_started():
+			print('Terminating a job which was never started.')
+		if self.t:
+			self.t.terminate()
+		if self.result_manager:
+			self.result = self.result._getvalue()
+			self.result_manager.shutdown()
+			self.result_manager = None
+		
 def setupModelRun(dir):
 	if (not os.path.isdir(dir)):
 		print('Invalid directory supplied to runModel: ' + dir)
@@ -84,7 +144,10 @@ def setupModelRun(dir):
 	return popdir
 
 def returnFromModelRun(dir):
-	os.chdir(popdir)
+	os.chdir(dir)
+
+def __runModelNonblocking__(args):
+	return runModel(args['dir'], args['exename'], args['n'], args['env'], args['add_lsfoptions'], args['add_pbsoptions'])
 
 def runModel(dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}):
 
@@ -119,7 +182,9 @@ def runModel(dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}):
 		print(cmd)
 
 	completed = False
+	print(os.getcwd())
 	err = os.system(cmd)
+	print(os.getcwd())
 	if (err):
 		print('error running '+exename+' in '+dir+', error code '+str(err))
 	else:
