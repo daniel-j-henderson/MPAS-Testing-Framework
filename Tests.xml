@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<all>
+	<test_group name="basic">
+		<test name="toytest"/>
+	</test_group>
+</all>
