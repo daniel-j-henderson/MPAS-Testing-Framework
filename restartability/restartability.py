@@ -13,12 +13,15 @@ env = None
 
 nprocs = 4
 
-
 def setup(tparams):
 	# set up any preconditions for the test
 	# return a dictionary of all the items required from the driver for the test
-	files = ['x1.2562.init.nc', 'x1.2562.graph.info.part.4']
-	locations = [tparams['test_dir'], tparams['test_dir']]
+	rundirA = tparams['test_dir']+'/runA'
+	rundirB = tparams['test_dir']+'/runB'
+	os.system('mkdir '+rundirA)
+	os.system('mkdir '+rundirB)
+	files = ['x1.2562.init.nc', 'x1.2562.graph.info.part.4', 'x1.2562.init.nc', 'x1.2562.graph.info.part.4']
+	locations = [rundirA, rundirA, rundirB, rundirB]
 
 	return {'exename':'atmosphere_model', 'files':files, 'locations':locations, 'nprocs':nprocs}
 
@@ -38,55 +41,79 @@ def test(tparams, res):
 		print('No utils module in test environment, quitting Restartability test')
 		return res
 
-
-	test_dir = tparams['test_dir'] # file path of src code, absolute
+	# Set up all the directories we'll use and fill them with necessary files
+	test_dir = tparams['test_dir'] # file path of our test sandbox, absolute 
+	src_dir = tparams['src_dir']
 	my_dir = tparams['SMARTS_dir']+'/restartability'
 	my_config_files_A = my_dir+'/filesA'
 	my_config_files_B = my_dir+'/filesB'
-	working_dir = test_dir+'/working'
+	rundirA = test_dir+'/runA'
+	rundirB = test_dir+'/runB'
+	os.chdir(rundirA)
+	os.system('ln -s ../atmosphere_model .')
+	os.system('ln -s '+src_dir+'/*.TBL .')
+	os.system('ln -s '+src_dir+'/*.DBL .')
+	os.system('ln -s '+src_dir+'/*DATA .')
+	os.chdir(rundirB)
+	os.system('ln -s ../atmosphere_model .')
+	os.system('ln -s '+src_dir+'/*.TBL .')
+	os.system('ln -s '+src_dir+'/*.DBL .')
+	os.system('ln -s '+src_dir+'/*DATA .')
 
-	# Perform 2-day run A
-	os.system('rm -r '+working_dir)
-	os.system('mkdir '+working_dir)
-	utils.linkAllFiles(my_config_files_A, test_dir)
-	#err = utils.runAtmosphereModel(test_dir, nprocs, env, {'-W':'0:05'})
-	err = (True, 0)
+	# Prepare the 2-day run (A) and the restart run (B) model run objects
+	utils.linkAllFiles(my_config_files_A, rundirA)
+	A = utils.modelRun(rundirA, 'atmosphere_model', nprocs, env, add_lsfoptions={'-W':'0:05', '-e':'run.err', '-o':'run.out'})
+							 #directory in which to run the model, num mpi tasks, env object, additional lsf options
+
+	utils.linkAllFiles(my_config_files_B, rundirB)
+	B = utils.modelRun(rundirB, 'atmosphere_model', nprocs, env, add_lsfoptions={'-W':'0:05', '-e':'run.err', '-o':'run.out'})
+
+	# Start the 2day run in non-blocking mode
+	# spin on the existence of the restart file
+	# then start the restart run
+	A.runModelNonblocking()
 	
-	if not err[0]:
+	restart_filename = 'restart.2010-10-24_00.00.00.nc'
+	while restart_filename not in os.listdir(rundirA):
+		pass
+	os.system('ln -s '+rundirA+'/restart.2010-10-24_00.00.00.nc '+rundirB)
+
+	B.runModelNonblocking()
+
+	while (not B.is_finished() or not A.is_finished()):
+		pass
+
+	# The terminate method must be called on all non-blocking runs after they have finished
+	A.terminate()
+	B.terminate()
+
+	ra = A.get_result()
+	rb = B.get_result()
+
+	if (not ra.get('completed')):
+		res.set('completed', False)
 		res.set('success', False)
-		res.set('err_code', err[1])
+		res.set('err_code', ra.get('err_code'))
 		res.set('err_msg', 'Initial run (run A) failed to run properly.')
 		return res
-
-	# Perform 1-day run B as a restart of run A
-	os.system('mv '+test_dir+'/restart.* '+working_dir)
-	os.system('rm '+test_dir+'/*.nc')
-	utils.linkAllFiles(my_config_files_B, test_dir)
-	os.system('ln -s '+working_dir+'/restart.2010-10-24_00.00.00.nc '+test_dir)
-	#err = utils.runAtmosphereModel(test_dir, nprocs, env, {'-W':'0:05'})
-	
-	if not err[0]:
+		
+	if (not rb.get('completed')):
+		res.set('completed', False)
 		res.set('success', False)
-		res.set('err_code', err[1])
-		res.set('err_msg', 'Restart run (run B) failed to run properly.')
+		res.set('err_code', rb.get('err_code'))
+		res.set('err_msg', 'Initial run (run B) failed to run properly.')
 		return res
-	
 
-	#diff = utils.compareFiles(working_dir+'/restart.2010-10-25_00.00.00.nc', test_dir+'/restart.2010-10-25_00.00.00.nc', env)
-	diff = utils.Result()
-	diff.set('diff_fields', [])
+	# Do the comparison
+	diff = utils.compareFiles(rundirA+'/restart.2010-10-25_00.00.00.nc', rundirB+'/restart.2010-10-25_00.00.00.nc', env)
 	if not diff:
 		res.set('err_msg', 'File comparison failed to run.')
 		return res
 
 	res.set('success', len(diff.get('diff_fields')) == 0)
-	os.system('rm '+test_dir+'/*.nc')
-	os.system('rm -r '+working_dir)
 	if not res.get('success'):
 		res.set('err', diff.get('diff_fields'))
-		res.set('err_msg', "Check the restartability test directory (including the 'working' directory)for files to help you debug the reason for this error.")
-	else:
-		os.system('rm '+test_dir+'/*.nc')
-		os.system('rm -r '+working_dir)
+		res.set('err_msg', "Check the restartability test directory for files to help you debug the reason for this error.")
+		res.set('RMS Error', diff.get('rms_error'))
 	res.set('completed_test', True)
 	return res

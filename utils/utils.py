@@ -205,6 +205,7 @@ def compareFiles(a, b, env):
 	r = Result()
 	r.attributes['diff_fields'] = []
 	r.attributes['num_diffs'] = []
+	r.attributes['rms_error'] = []
 
 	if not os.path.isfile(a):
 		print(str(a)+': File not found, cannot compare to '+str(b))
@@ -225,9 +226,14 @@ def compareFiles(a, b, env):
 			r.attributes['diff_fields'].append(k)
 			i = 0
 			n = 0
+			rms = 0
 			for i in range(0, len(f1.variables[k][:])):
 				if f1.variables[k][i] != f2.variables[k][i]:
 					n += 1
+					rms += (f1.variables[k][i] - f2.variables[k][i])**2
+			rms = rms / float(n)
+			rms = rms**.5
+			r.attributes['rms_error'].append(rms)
 			r.attributes['num_diffs'].append(n)
 	f1.close()
 	f2.close()
@@ -252,7 +258,7 @@ def searchForFile(tag, name, relpath):
 def retrieveFileFromSL(name, dest, env):
 	import xml.etree.ElementTree as ET
 
-	if env.get('name') == 'Yellowstone':
+	if env.get('name') == 'yellowstone':
 		print('On yellowstone, looking for '+name)
 	elif env.get('name') == 'mmm':
 		print('On an MMM machine, looking for '+name)
@@ -305,25 +311,28 @@ def writeReportTex(f, results):
 	preamble = '\\documentclass[a4paper]{article} \n\\usepackage[english]{babel} \n\\usepackage[utf8x]{inputenc} \n\\usepackage{graphicx}\n\\usepackage[T1]{fontenc} \n\\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
 	f.write(preamble)
 	f.write('\n')
-	f.write('\\section{Successful Tests}\n')
-	for r in results:
+	current_group = None
+	for t in results:
+		r = t[0]
+		if t[1] != current_group:
+			current_group = t[1]
+		f.write('\\section{'+translate(current_group)+'}\n')
 		if r.attributes:
-			if not r.get('success'):
-				continue
 			f.write('\\subsection{'+r.get('name')+'}\n')
 			f.write('\\begin{tabular}{|p{.3\\textwidth} |p{.7\\textwidth} |} \\hline\n')
+			f.write('Result & '+ ('success' if r.get('success') else 'failed') + ' \\\\ \\hline \n')
 			for k, v in r.attributes.items():
 				f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
 			f.write('\\end{tabular}\n')
-	f.write('\\section{Failed Tests}\n')
-	for r in results:
-		if r.get('success'):
-			continue
-		f.write('\\subsection{'+r.get('name')+'}\n')
-		f.write('\\begin{tabular}{|p{.3\\textwidth} |p{.7\\textwidth} |} \\hline\n')
-		for k, v in r.attributes.items():
-			f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
-		f.write('\\end{tabular}\n')
+#	f.write('\\section{Failed Tests}\n')
+#	for r in results:
+#		if r.get('success'):
+#			continue
+#		f.write('\\subsection{'+r.get('name')+'}\n')
+#		f.write('\\begin{tabular}{|p{.3\\textwidth} |p{.7\\textwidth} |} \\hline\n')
+#		for k, v in r.attributes.items():
+#			f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
+#		f.write('\\end{tabular}\n')
 	f.write('\\end{document}')
 
 

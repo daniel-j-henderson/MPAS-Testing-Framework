@@ -47,9 +47,10 @@ ResultManager.register('Result', utils.Result)
 
 class testProcess(multiprocessing.Process):
    
-	def __init__(self, func=None, nprocs=1, tparams={}, initpath='.', name='', result=None):
+	def __init__(self, func=None, nprocs=1, tparams={}, initpath='.', name='', result=None, group=None):
 		multiprocessing.Process.__init__(self)
 		self.myTest = func
+		self.group = group
 		self.num_procs = nprocs
 		self.finished = False
 		self.tparams = tparams
@@ -78,17 +79,19 @@ class testProcess(multiprocessing.Process):
 	def get_result(self):
 		return self.result
 
+	def get_group(self):
+		return self.group
+
 #
 #
 # Set up the environment object
 #
 #
-timestamp = datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', '_')
+timestamp = datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', '_').replace(':', '.')
 fnames = os.listdir('.')
 config_file = None
-for f in fnames:
-	if '.xml' in f:
-		config_file = f
+if 'Environment.xml' in fnames:
+	config_file = 'Environment.xml'
 if not config_file:
 	print('Please provide an environment configuration file in xml form.')
 	os._exit(1)
@@ -112,8 +115,6 @@ if root.get('batchsystem') == 'LSF':
 	env.set('lsf_options', options)
 
 
-
-
 env.set('utils', utils)
 env.set('nc', nc)
 env.set('np', np)
@@ -132,10 +133,22 @@ except ValueError:
 	
 print('Max Cores: '+str(total_procs))
 
-test_names = [] 
+tests = {}
+root = ET.parse('Tests.xml').getroot()
+for el in root:
+	if el.tag == 'test_group' and el.get('name') in cmdargs:
+		group_name = el.get('name')
+		tests[group_name] = []
+		for t in el:
+			tests[group_name].append(t.get('name'))
+for key in tests:
+	if key in cmdargs:
+		cmdargs.remove(key)
+
 if len(cmdargs) > 1:
+	tests['misc'] = []
 	for i in range(1,len(cmdargs)):
-		test_names.append(cmdargs[i])
+		tests['misc'].append(cmdargs[i])
 
 src_dir = os.getcwd()
 pwd = os.getcwd()
@@ -156,55 +169,66 @@ os.system('mkdir '+container)
 #
 unfinished_tests = []
 managers = {}
-for subdir in os.listdir(SMARTS_dir):
-	if test_names and subdir not in test_names:
-		continue
-	if len(subdir.split('.')) > 1:
-		continue
-	if subdir[0] == '.' or 'test_driver' in subdir or 'utils' in subdir or 'results' in subdir or '.xml' in subdir:
-		continue
-	try:
-		mod = ilib.import_module(subdir+'.'+subdir)
-	except ImportError:
-		print("'"+subdir+"' is not a test module, skipping it")
-		continue
-	
-	test_dir = container+'/'+subdir
-	os.system('mkdir '+test_dir)
-	tparams = tparams_base.copy()
-	tparams['test_dir'] = test_dir
+#for subdir in os.listdir(SMARTS_dir):
+#	if test_names and subdir not in test_names:
+#		continue
+#	if len(subdir.split('.')) > 1:
+#		continue
+#	if subdir[0] == '.' or 'test_driver' in subdir or 'utils' in subdir or 'results' in subdir or '.xml' in subdir:
+#		continue
+#	try:
+#		mod = ilib.import_module(subdir+'.'+subdir)
+#	except ImportError:
+#		print("'"+subdir+"' is not a test module, skipping it")
+#		continue
+
+for group_name, test_arr in tests.items():
+	for subdir in test_arr:
+		
+		try:
+			mod = ilib.import_module(subdir+'.'+subdir)
+		except ImportError:
+			print("'"+subdir+"' is not a test module, skipping it")
+			continue
 
 
-	prec = mod.setup(tparams)
 
-	if 'exename' in prec:
-		exename = prec['exename']
-		os.system('ln -s '+src_dir+'/'+exename+' '+test_dir)	
+		test_dir = container+'/'+subdir
+		os.system('mkdir '+test_dir)
+		tparams = tparams_base.copy()
+		tparams['test_dir'] = test_dir
 
-	if 'files' in prec:
-		files = prec['files']
-		if 'locations' in prec:
-			locations = prec['locations']
+
+		prec = mod.setup(tparams)
+
+		if 'exename' in prec:
+			exename = prec['exename']
+			os.system('ln -s '+src_dir+'/'+exename+' '+test_dir)	
+
+		if 'files' in prec:
+			files = prec['files']
+			if 'locations' in prec:
+				locations = prec['locations']
+			else:
+				locations = [test_dir]*len(files)
+			found_files=[False]*len(files)
+			for i in range(len(files)):
+				if utils.retrieveFileFromSL(files[i], locations[i], env):
+					found_files[i] = True
+			tparams['found_files'] = found_files
+
+		if 'nprocs' in prec:
+			nprocs = prec['nprocs']
 		else:
-			locations = [test_dir]*len(files)
-		found_files=[False]*len(files)
-		for i in range(len(files)):
-			if utils.retrieveFileFromSL(files[i], locations[i], env):
-				found_files[i] = True
-		tparams['found_files'] = found_files
+			nprocs = 0
+		if nprocs > total_procs:
+			print('Cannot perform '+subdir+' test due to resource constraints')
+			continue	
 
-	if 'nprocs' in prec:
-		nprocs = prec['nprocs']
-	else:
-		nprocs = 0
-	if nprocs > total_procs:
-		print('Cannot perform '+subdir+' test due to resource constraints')
-		continue	
-
-	managers[subdir] = ResultManager()
-	managers[subdir].start()
-	r = managers[subdir].Result()
-	unfinished_tests.append(testProcess(func=mod.test, nprocs=nprocs, tparams=tparams, initpath=test_dir, name=subdir, result=r))
+		managers[subdir] = ResultManager()
+		managers[subdir].start()
+		r = managers[subdir].Result()
+		unfinished_tests.append(testProcess(func=mod.test, nprocs=nprocs, tparams=tparams, initpath=test_dir, name=subdir, result=r, group=group_name))
 
 
 #
@@ -238,8 +262,9 @@ while tests_in_progress:
 	finished_tests.append(t)
 	tests_in_progress.remove(t)
 
+finished_tests.sort(key=lambda t: t.get_group())
 for t in finished_tests:
-	results.append(t.get_result()._getvalue())
+	results.append((t.get_result()._getvalue(), t.get_group()))
 	managers[t.get_name()].shutdown()
 
 # 
@@ -260,7 +285,8 @@ os.system('pdflatex -halt-on-error -interaction=batchmode '+tfname)
 os.chdir(popdir)
 
 
-for r in results:
+for t in results:
+	r = t[0]
 	if(not r.get('completed_test')):
 		print('Test did not complete.')
 
