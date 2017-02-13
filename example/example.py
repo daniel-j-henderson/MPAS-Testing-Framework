@@ -10,7 +10,7 @@ def setup(tparams):
 	#test(), so it is unwise to make any changes that might be reverted by some
 	#other test before the test() function is called
 
-	files = [x1.2562.grid.nc, x1.2562.graph.part.4] #list of desired files from the SL
+	files = ['x1.2562.grid.nc', 'x1.2562.graph.info.part.4'] #list of desired files from the SL
 	# optional :: locations  = [a, b ...] list of locations (absolute filepaths) to put each file in 'files'
 													# len(locations) == len(files)
 	return {'files':files, 'exename':'atmosphere_model', 'nprocs':4}
@@ -54,36 +54,41 @@ def test(tparams, res):
 	res.set('completed', False) #The res object must have the 'completed' attribute set upon return.
 										 #Should be True only if the tests finishes without error (regardless 
 									    #of whether it failed).
-	res.set('name', 'Toy Test (4)')  #res object should have the name set to the name of your test.
+	res.set('name', 'Example')  #res object should have the name set to the name of your test.
 
 	if not env:
-		print('No environment object passed to Restartability test, quitting Toy test')
+		print('No environment object passed to Example test, quitting')
 		return res
 	if not utils:
-		print('No utils module in test environment, quitting Toy test')
+		print('No utils module in test environment, quitting Example test')
 		return res
 	
 
 	test_dir = tparams['test_dir'] # file path of testing sandbox, absolute
-	my_dir = tparams['SMARTS_dir']+'/toytest' # store any small files you need, e.g. namelists, in here somewhere
+	my_dir = tparams['SMARTS_dir']+'/Example' # store any small files you need, e.g. namelists, in here somewhere
 
 	#(completed, err_code) = runAtmosphereModel(dir, exename, ntasks, env, additional_lsf_options, additional_pbs_options)
 	#completed: boolean, signifies whether the function runAtmosphereModel completed or returned early
 	#err_code: the return code from the model executable
 	#Note: this function blocks until the model run is complete
 
-	utils.linkAllFiles(my_dir+'/namelists', test_dir)
-	myRun = utils.modelRun(test_dir, 'atmosphere_model', 4, env, add_lsfoptions={'-W':'0:01', '-e':'run.err', '-o':'run.out'})
+	#If your test comes with files like namelists and such, link them in this way
+	#utils.linkAllFiles(my_dir+'/namelists', test_dir)
 
-	myRun.runModelNonblocking() #returns immediately, model run happening in background
+	myRun = utils.modelRun(test_dir, 'atmosphere_model', 4, env, add_lsfoptions={'-W':'0:01', '-e':'run.err', '-o':'run.out'})
+	print('Starting model run')
+	#myRun.runModelNonblocking() #returns immediately, model run happening in background
 	#myRun.runModelBlocking() #returns when model run is finished
+	e = myRun.dummyModelRun('success') # As an example, sets the result as if a successful model run occured
 	while not myRun.is_finished():
 		pass
 	myRun.terminate()
+	print('Finished model run')
 
 	e = myRun.get_result()
 	res.set('success', e.get('completed') and e.get('success'))	
 	res.set('err_code', e.get('err_code'))
+	res.set('err_msg', 'Example test ran fine')
 	res.set('completed', True)
 	
 	return

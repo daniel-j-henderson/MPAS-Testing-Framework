@@ -115,5 +115,5 @@ def test(tparams, res):
 		res.set('err', diff.get('diff_fields'))
 		res.set('err_msg', "Check the restartability test directory for files to help you debug the reason for this error.")
 		res.set('RMS Error', diff.get('rms_error'))
-	res.set('completed_test', True)
+	res.set('completed', True)
 	return res
