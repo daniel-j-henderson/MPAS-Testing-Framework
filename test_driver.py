@@ -156,7 +156,7 @@ SMARTS_dir = os.path.dirname(os.path.realpath( __file__ ))
 
 
 results = []
-tparams_base = {'src_dir':src_dir, 'SMARTS_dir':SMARTS_dir, 'env':env, 'results':results}
+tparams_base = {'src_dir':src_dir, 'SMARTS_dir':SMARTS_dir, 'env':env}
 
 container = pwd+'/'+'regtest.'+timestamp
 os.system('mkdir '+container)
@@ -291,13 +291,13 @@ os.chdir(popdir)
 
 for t in results:
 	r = t[0]
-	if(not r.get('completed_test')):
+	if(not r.get('completed')):
 		print('Test did not complete.')
 
 	print(r.get('name')+' test ' + ('succeeded' if r.get('success') else 'failed'))
 
 	if r.get('err_code') is not None:
-		print ('   with error code '+str(r.get('errcode')))
+		print ('   with error code '+str(r.get('err_code')))
 
 	if r.get('success') == False:
 		err = r.get('err')

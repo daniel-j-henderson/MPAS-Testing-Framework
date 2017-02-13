@@ -31,7 +31,7 @@ def test(tparams, res):
 	env = tparams['env']
 	utils = env.get('utils')
 
-	res.set('completed_test', False)
+	res.set('completed', False)
 	res.set('name', 'Restartability Test')
 
 	if not env:

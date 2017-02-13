@@ -8,7 +8,7 @@ def test(tparams, res):
 	utils=env.get('utils')
 	
 
-	res.set('completed_test', False)
+	res.set('completed', False)
 	res.set('name', 'Toy Test (4)')
 
 	if not env:
@@ -71,11 +71,11 @@ def test(tparams, res):
 #	res.set('success', eb.get('completed'))
 #	res.set('errcode', eb.get('err_code'))
 	res.set('success', ea.get('completed') and eb.get('completed'))
-	res.set('errcode', (ea.get('err_code'), eb.get('err_code')))
+	res.set('err_code', (ea.get('err_code'), eb.get('err_code')))
 
 	#e = utils.runModelBlocking(test_dir, 'toy', 4, env, add_lsfoptions={'-K':'', '-W':'0:01', '-e':'run.err', '-o':'run.out'})
 	# = (True, 0)
 	#res.set('success', e[0])	
 	#res.set('errcode', e[1])
-	res.set('completed_test', True)
+	res.set('completed', True)
 	return res
