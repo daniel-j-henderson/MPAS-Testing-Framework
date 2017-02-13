@@ -152,7 +152,8 @@ if len(cmdargs) > 1:
 
 src_dir = os.getcwd()
 pwd = os.getcwd()
-SMARTS_dir = src_dir+'/SMARTS'
+SMARTS_dir = os.path.dirname(os.path.realpath( __file__ ))
+
 
 results = []
 tparams_base = {'src_dir':src_dir, 'SMARTS_dir':SMARTS_dir, 'env':env, 'results':results}
@@ -199,7 +200,10 @@ for group_name, test_arr in tests.items():
 		tparams['test_dir'] = test_dir
 
 
+		popdir = os.getcwd()
+		os.chdir(test_dir)
 		prec = mod.setup(tparams)
+		os.chdir(popdir)
 
 		if 'exename' in prec:
 			exename = prec['exename']
