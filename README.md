@@ -19,7 +19,7 @@ The SL is set up as a file hierarchy so that it can easily be perused by a human
 1. Clone this repository, into the top-level MPAS directory if desired (should already be compiled)
 2. Make sure an environment xml file (named 'Environment.xml') and the Tests.xml file are in the top-level MPAS directory. You may have to link and/or rename those files from this repository.
 3. run the command <br>
-python SMARTS/test_driver.py <group_name> ... <test_name>... -n <max_num_tasks> <br>
+python SMARTS/test_driver.py \<group_name\> ... \<test_name\>... -n \<max_num_tasks\> <br>
   to run all of the desired tests (try 'python SMARTS/test_driver.py restartability -n 8')
 
 When the tests have completed, a results folder will be made with a pdf report of the results of all tests. 
