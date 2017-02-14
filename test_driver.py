@@ -133,8 +133,12 @@ except ValueError:
 	
 print('Max Cores: '+str(total_procs))
 
+src_dir = os.getcwd()
+pwd = os.getcwd()
+SMARTS_dir = os.path.dirname(os.path.realpath( __file__ ))
+
 tests = {}
-root = ET.parse('Tests.xml').getroot()
+root = ET.parse(SMARTS_dir+'/Tests.xml').getroot()
 for el in root:
 	if el.tag == 'test_group' and el.get('name') in cmdargs:
 		group_name = el.get('name')
@@ -149,10 +153,6 @@ if len(cmdargs) > 1:
 	tests['misc'] = []
 	for i in range(1,len(cmdargs)):
 		tests['misc'].append(cmdargs[i])
-
-src_dir = os.getcwd()
-pwd = os.getcwd()
-SMARTS_dir = os.path.dirname(os.path.realpath( __file__ ))
 
 
 results = []
@@ -187,7 +187,8 @@ for group_name, test_arr in tests.items():
 	for subdir in test_arr:
 		
 		try:
-			mod = ilib.import_module(subdir+'.'+subdir)
+			sys.path.append(SMARTS_dir+'/'+subdir)
+			mod = ilib.import_module(subdir)
 		except ImportError:
 			print("'"+subdir+"' is not a test module, skipping it")
 			continue
