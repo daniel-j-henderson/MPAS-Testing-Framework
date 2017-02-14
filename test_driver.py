@@ -90,8 +90,21 @@ class testProcess(multiprocessing.Process):
 timestamp = datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', '_').replace(':', '.')
 fnames = os.listdir('.')
 config_file = None
-if 'Environment.xml' in fnames:
-	config_file = 'Environment.xml'
+cmdargs = sys.argv[:]
+
+try:
+	i = cmdargs.index('-env')
+	config_file = cmdargs[i+1]
+	print('config file == '+config_file)
+	cmdargs.pop(i+1)
+	cmdargs.pop(i)
+except IndexError:
+	if 'Environment.xml' in fnames:
+		config_file = 'Environment.xml'
+except ValueError:
+	if 'Environment.xml' in fnames:
+		config_file = 'Environment.xml'
+
 if not config_file:
 	print('Please provide an environment configuration file in xml form.')
 	os._exit(1)
@@ -120,7 +133,6 @@ env.set('nc', nc)
 env.set('np', np)
 
 total_procs = 8
-cmdargs = sys.argv[:]
 try:
 	i = cmdargs.index('-n')
 	total_procs = int(cmdargs[i+1])
@@ -130,10 +142,22 @@ except IndexError:
 	print("Please provide the max number of cores you'd like to run the reg tests on.")
 except ValueError:
 	print("Please provide the max number of cores you'd like to run the reg tests on.")
-	
 print('Max Cores: '+str(total_procs))
+	
+try:
+	i = cmdargs.index('-src')
+	src_dir = cmdargs[i+1]
+	popdir = os.getcwd()
+	os.chdir(src_dir)
+	src_dir = os.getcwd()
+	os.chdir(popdir)
+	cmdargs.pop(i+1)
+	cmdargs.pop(i)
+except IndexError:
+	src_dir = os.getcwd()
+except ValueError:
+	src_dir = os.getcwd()
 
-src_dir = os.getcwd()
 pwd = os.getcwd()
 SMARTS_dir = os.path.dirname(os.path.realpath( __file__ ))
 
