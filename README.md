@@ -3,9 +3,9 @@ This is a regression testing suite being implemented in python for MPAS, the Mod
 
 
 ###Organization
-The testing suite is organized thusly: there is a main driver script called test_driver.py which sets up the testing environment and launches all tests. Each test is provided in the form of a python module inside a directory which contains the .py module implementation file (of the same name as the directory), an __init__.py file, and any files that are specific to that test that the test may require (namelists or stream definitions or things of that nature). See the restartability test (restartability directory) or the examples in the example directory. To run the 'example' test, see the <b>Run</b> section. If you'd like to run the 'toytest' example, simply compile the toy.f90 file using an mpi compiler, move it to some other directory which also contains your XML files (described later), and run the test from there.
+The testing suite is organized thusly: there is a main driver script called test_driver.py which sets up the testing environment and launches all tests. Each test is provided in the form of a python module inside a directory which contains the .py module implementation file (of the same name as the directory) and any files that are specific to that test that the test may require (namelists or stream definitions or things of that nature). See the restartability test (restartability directory) or the examples in the example directory. To run the 'example' test, see the <b>Run</b> section. If you'd like to run the 'toytest' example, simply compile the toy.f90 file using an mpi compiler, move it to some other directory (equivalent to MPAS directory) which also contains your XML config file (described later), and run the test from there. Also, the toytest directory must be copied/moved (not linked) one level up.
 
-You must specify which groups of tests (or individual tests) to run (groups are specified in the Tests.xml file, which must be palced in the top-level MPAS directory). An XML file is required to configure each run environment (it may also specify the test code directory). This XML file (see cocobolo.xml) tells the driver where to find the standard library as well as some other useful information about the environment in which we are running the tests. 
+You must specify which groups of tests or individual tests you want to run on the command line (groups are specified in the Tests.xml file, which can be found in this directory). An additional XML file is required to configure each run environment (it may also specify the test code directory). This XML file (see yellowstone.xml) tells the driver where to find the standard library as well as some other useful information about the environment in which we are running the tests. 
 
 Both the driver and the individual tests may make use of the utils module, whose implementation can be found in the utils subdirectory. Note: each test module will not import the utils module directly, but rather it is passed along by the driver as a member of the env object when the test is invoked.
 
@@ -18,7 +18,7 @@ The SL is set up as a file hierarchy so that it can easily be perused by a human
 
 1. Clone this repository, into the top-level MPAS directory if desired (should already be compiled)
 2. Make sure an environment xml file (named 'Environment.xml') and the Tests.xml file are in the top-level MPAS directory. You may have to link and/or rename those files from this repository.
-3. run the command <br>
+3. From the top-level MPAS directory, run the command <br>
 python SMARTS/test_driver.py \<group_name\> ... \<test_name\>... -n \<max_num_tasks\> <br>
   to run all of the desired tests (try 'python SMARTS/test_driver.py example -n 4')
 
