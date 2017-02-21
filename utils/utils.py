@@ -43,6 +43,12 @@ class Result:
 		self.attributes[attname] = value
 		return
 
+	def remove(self, attname):
+		try:
+			del self.attributes[attname]
+			return True
+		except KeyError:
+			return False
 
 
 
@@ -67,6 +73,7 @@ class Environment:
 	
 	def __init__(self):
 		self.params = {}
+		self.modsets = {}
 
 	def get(self, pname):
 		try:
@@ -78,8 +85,23 @@ class Environment:
 		self.params[pname] = value
 		return
 
+	def add_modset(self, name, root):
+		self.modsets[name] = root
 
+	def contains_modset(self, name):
+		return (name in self.modsets)
 
+	def reset(self, name):
+		from env_modules_python import module
+
+		if not self.contains_modset(name):
+			return False 
+		modset = self.modsets[name]
+		module('purge')
+		if name is not 'base':
+			self.reset('base')
+		for mod in modset:
+			module('load', mod.get('name'))
 
 class ResultManager(mm.BaseManager):
   	# Private to the utils module, test writer need not use 

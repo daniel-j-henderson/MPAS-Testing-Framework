@@ -1,5 +1,7 @@
 import os, sys
 
+nprocs = 4
+
 def setup(tparams):
 	#return the name of the executable you want (it will be linked into your testing sandbox) 
 	#and the max number of processors your test will use at a given time. Also, return a list of the files you

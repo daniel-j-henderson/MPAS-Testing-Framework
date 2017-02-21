@@ -1,6 +1,23 @@
 <?xml version="1.0"?>
-<environment name="yellowstone" batchsystem="LSF" pathSL="/glade/scratch/hendersn/Standard-Library/"> 
+<environment name="yellowstone" batchsystem="LSF" modules="True" path_LMOD="/glade/apps/opt/lmod/lmod/init" pathSL="/glade/scratch/hendersn/Standard-Library/"> 
 	<lsf_option name="-P" value="P64000101"/>
 	<lsf_option name="-q" value="regular"/>
+	<mod_set name="base">
+		<module name="ncarenv"/>
+		<module name="ncarbinlibs"/>
+		<module name="python"/>
+		<module name="all-python-libs"/>
+	</mod_set>
+	<mod_set name="gnu" version="default">
+		<module name="gnu"/>
+		<module name="netcdf-mpi"/>
+		<module name="pnetcdf"/>
+		<module name="pio"/>
+	</mod_set>
+	<mod_set name="intel" version="default">
+		<module name="intel"/>
+		<module name="netcdf-mpi"/>
+		<module name="pnetcdf"/>
+		<module name="pio"/>
+	</mod_set>
 </environment>
-

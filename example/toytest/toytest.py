@@ -1,5 +1,7 @@
 import os, sys, time
 
+nprocs = 7
+
 def setup(tparams):
 	return {'exename':'toy', 'nprocs':7}
 
