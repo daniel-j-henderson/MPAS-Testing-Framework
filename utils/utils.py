@@ -107,6 +107,8 @@ class Environment:
 		e = self.module('purge')
 		if e:
 			print('purge failed')
+
+		# Start by resetting to the base modules. All modsets are built off of the base modset.
 		if name is not 'base':
 			e = self.mod_reset('base')
 			if e:
@@ -114,12 +116,14 @@ class Environment:
 		for mod in modset:
 			if mod.tag == 'module':
 				modname = mod.get('name')
-				if modname in versions:
+				if modname in versions: # if a version was requested, append it to the modname
 					if versions[modname] in [c.get('v') for c in mod]:
 						modname = modname+'/'+versions[modname]
 				e = self.module('load', modname)
 				if e:
 					return e
+
+			# the xml tag was for an environment variable
 			elif mod.tag == 'env_var':
 				os.environ[mod.get('name')] = mod.get('value')
 

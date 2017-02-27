@@ -122,9 +122,8 @@ env.set('pathSL', root.get('pathSL'))
 env.set('modules', root.get('modules'))
 
 if env.get('modules'):
-	sys.path.append(root.get('path_LMODINIT'))
-	env.set('LMOD_CMD', root.get('path_LMOD'))
-for modset in root.findall('mod_set'):
+	env.set('LMOD_CMD', root.get('LMOD_CMD'))
+for modset in root.findall('modset'):
 	env.add_modset(modset.get('name'), modset)
 if not env.contains_modset('base'):
 	print('Environment XML file must contain base modset.')
