@@ -99,7 +99,7 @@ class Environment:
 	def contains_modset(self, name):
 		return (name in self.modsets)
 
-	def mod_reset(self, name):
+	def mod_reset(self, name, versions={}):
 
 		if not self.contains_modset(name):
 			return False 
@@ -113,7 +113,11 @@ class Environment:
 				return e
 		for mod in modset:
 			if mod.tag == 'module':
-				e = self.module('load', mod.get('name'))
+				modname = mod.get('name')
+				if modname in versions:
+					if versions[modname] in [c.get('v') for c in mod]:
+						modname = modname+'/'+versions[modname]
+				e = self.module('load', modname)
 				if e:
 					return e
 			elif mod.tag == 'env_var':
