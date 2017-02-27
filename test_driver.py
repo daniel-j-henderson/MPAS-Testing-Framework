@@ -122,7 +122,8 @@ env.set('pathSL', root.get('pathSL'))
 env.set('modules', root.get('modules'))
 
 if env.get('modules'):
-	sys.path.append(root.get('path_LMOD'))
+	sys.path.append(root.get('path_LMODINIT'))
+	env.set('LMOD_CMD', root.get('path_LMOD'))
 for modset in root.findall('mod_set'):
 	env.add_modset(modset.get('name'), modset)
 if not env.contains_modset('base'):
@@ -130,7 +131,7 @@ if not env.contains_modset('base'):
 	os._exit(1)	
 if root.get('PYTHONPATH'):
 	sys.path.append(root.get('PYTHONPATH'))
-env.reset('base')
+env.mod_reset('base')
 
 # Depending on the batch system, put the necessary options (things like
 # project codes or queue names) in the environment object in a dict
@@ -203,23 +204,11 @@ os.system('mkdir '+container)
 
 #
 #
-# Make a process for each test, complete with the necessary preconditions
+# Make a process for each test
 #
 #
 unfinished_tests = []
 managers = {}
-#for subdir in os.listdir(SMARTS_dir):
-#	if test_names and subdir not in test_names:
-#		continue
-#	if len(subdir.split('.')) > 1:
-#		continue
-#	if subdir[0] == '.' or 'test_driver' in subdir or 'utils' in subdir or 'results' in subdir or '.xml' in subdir:
-#		continue
-#	try:
-#		mod = ilib.import_module(subdir+'.'+subdir)
-#	except ImportError:
-#		print("'"+subdir+"' is not a test module, skipping it")
-#		continue
 
 for group_name, test_arr in tests.items():
 	for subdir in test_arr:
@@ -234,39 +223,6 @@ for group_name, test_arr in tests.items():
 
 
 		test_dir = container+'/'+subdir
-#		os.system('mkdir '+test_dir)
-#		tparams = tparams_base.copy()
-#		tparams['test_dir'] = test_dir
-#
-#
-#		popdir = os.getcwd()
-#		os.chdir(test_dir)
-#		prec = mod.setup(tparams)
-#		os.chdir(popdir)
-#
-#		if 'exename' in prec:
-#			exename = prec['exename']
-#			if not os.path.exists(src_dir+'/'+exename):
-#				print(exename+' does not exist in 'src_dir)
-#				os._exit(1)
-#			os.system('ln -s '+src_dir+'/'+exename+' '+test_dir)	
-#
-#		if 'files' in prec:
-#			files = prec['files']
-#			if 'locations' in prec:
-#				locations = prec['locations']
-#			else:
-#				locations = [test_dir]*len(files)
-#			found_files=[False]*len(files)
-#			for i in range(len(files)):
-#				if utils.retrieveFileFromSL(files[i], locations[i], env):
-#					found_files[i] = True
-#			tparams['found_files'] = found_files
-#
-#		if 'nprocs' in prec:
-#			nprocs = prec['nprocs']
-#		else:
-#			nprocs = 0
 		if mod.nprocs > total_procs:
 			print('Cannot perform '+subdir+' test due to resource constraints')
 			continue	
@@ -314,9 +270,6 @@ while unfinished_tests:
 				prec = t.setup(tparams)
 				os.chdir(popdir)
 
-				if 'modset' in prec:
-					env.reset(prec['modset'])
-						
 				if 'exename' in prec:
 					exename = prec['exename']
 					if not os.path.exists(src_dir+'/'+exename):
@@ -336,18 +289,7 @@ while unfinished_tests:
 							found_files[i] = True
 					tparams['found_files'] = found_files
 
-				#if 'nprocs' in prec:
-			#		nprocs = prec['nprocs']
-			#	else:
-		#			nprocs = 0
-		#		if nprocs > total_procs:
-		#			print('Cannot perform '+subdir+' test due to resource constraints')
-		#			continue	
-
 				t.tparams = tparams
-
-
-
 				tests_in_progress[-1].start()
 			
 while tests_in_progress:

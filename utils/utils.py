@@ -2,7 +2,6 @@ import os, sys
 import threading, multiprocessing
 import multiprocessing.managers as mm
 
-
 """
 What's Included (for test writers):
 	Result class
@@ -16,9 +15,8 @@ What's Included (for test writers):
 
 	Note: if you utilize the setup() method in your test, there is no
 			need to use the searchForFile() or retreiveFileFromSL() methods.	
+
 """
-
-
 
 class Result:
 	"""
@@ -88,20 +86,38 @@ class Environment:
 	def add_modset(self, name, root):
 		self.modsets[name] = root
 
+	def module(self, *args):
+		if not self.get('LMOD_CMD'):
+			print('Module command not found.')
+			return False
+		import string
+		import subprocess as sp
+		a = sp.Popen(self.get('LMOD_CMD')+' python '+string.join(args), shell=True, stdout=sp.PIPE)
+		exec a.stdout.read()
+		return a.wait()
+
 	def contains_modset(self, name):
 		return (name in self.modsets)
 
-	def reset(self, name):
-		from env_modules_python import module
+	def mod_reset(self, name):
 
 		if not self.contains_modset(name):
 			return False 
 		modset = self.modsets[name]
-		module('purge')
+		e = self.module('purge')
+		if e:
+			print('purge failed')
 		if name is not 'base':
-			self.reset('base')
+			e = self.mod_reset('base')
+			if e:
+				return e
 		for mod in modset:
-			module('load', mod.get('name'))
+			if mod.tag == 'module':
+				e = self.module('load', mod.get('name'))
+				if e:
+					return e
+			elif mod.tag == 'env_var':
+				os.environ[mod.get('name')] = mod.get('value')
 
 class ResultManager(mm.BaseManager):
   	# Private to the utils module, test writer need not use 
@@ -240,7 +256,8 @@ class modelRun:
 		self.result_manager = ResultManager()
 		self.result_manager.start()
 		self.result = self.result_manager.Result() 
-		self.t = modelProcess(pre=setupModelRun, post=returnFromModelRun, main=__runModelNonblocking__, nprocs = self.n_tasks, args={'dir':self.run_dir, 'exename':self.exename, 'n':self.n_tasks, 'env':self.env, 'dest':self.run_dir, 'add_lsfoptions':self.add_lsfoptions, 'add_pbsoptions':self.add_pbsoptions}, result = self.result)
+		self.t = modelProcess(pre=setupModelRun, post=returnFromModelRun, main=__runModelNonblocking__, nprocs = self.n_tasks, 
+									args={'dir':self.run_dir, 'exename':self.exename, 'n':self.n_tasks, 'env':self.env, 'dest':self.run_dir, 'add_lsfoptions':self.add_lsfoptions, 'add_pbsoptions':self.add_pbsoptions}, result = self.result)
 		self.started = True
 		self.t.start()
 		return True 
@@ -359,6 +376,16 @@ def runModel(dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}):
 #
 
 
+
+def compile(src_dir, core, target, clean=False):
+	popdir = os.getcwd()
+	os.chdir(src_dir)
+	if clean:
+		r = os.system('make clean CORE='+core)
+		if r != 0:
+			return r
+	r = os.system('make '+target+' CORE='+core)
+	return r
 
 #
 # The following 4 methods are utilities for the test writer to utilize.
