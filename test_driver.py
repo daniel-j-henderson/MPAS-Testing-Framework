@@ -219,7 +219,12 @@ for group_name, test_arr in tests.items():
 			print("'"+subdir+"' is not a test module, skipping it")
 			continue
 
-
+		try:
+			if env.get('name') not in mod.compatible_environments or 'all' not in mod.compatible_environments:
+				print('The '+subdir+' test is not compatible with this environment ('+env.get('name')+')')
+				continue
+		except AttributeError:
+			pass
 
 		test_dir = container+'/'+subdir
 		if mod.nprocs > total_procs:

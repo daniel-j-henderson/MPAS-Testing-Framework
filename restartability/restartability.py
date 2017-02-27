@@ -23,7 +23,7 @@ def setup(tparams):
 	files = ['x1.2562.init.nc', 'x1.2562.graph.info.part.4', 'x1.2562.init.nc', 'x1.2562.graph.info.part.4']
 	locations = [rundirA, rundirA, rundirB, rundirB]
 
-	return {'exename':'atmosphere_model', 'files':files, 'locations':locations, 'nprocs':nprocs}
+	return {'exename':'atmosphere_model', 'files':files, 'locations':locations}
 
 
 

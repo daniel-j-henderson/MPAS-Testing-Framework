@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <all>
+	<test_group name="compile">
+		<test name="comptest"/>
+	</test_group>
 	<test_group name="examples">
 		<test name="toytest"/>
 		<test name="example"/>

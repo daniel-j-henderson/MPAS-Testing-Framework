@@ -1,6 +1,9 @@
 import os, sys
 
+# 'nprocs': max number of MPI tasks this test may use at any given time.
 nprocs = 4
+# 'compatible_environments': list of environments this test can run on. Optional. default: all.
+['all']
 
 def setup(tparams):
 	#return the name of the executable you want (it will be linked into your testing sandbox) 
@@ -15,14 +18,13 @@ def setup(tparams):
 	files = ['x1.2562.grid.nc', 'x1.2562.graph.info.part.4'] #list of desired files from the SL
 	# optional :: locations  = [a, b ...] list of locations (absolute filepaths) to put each file in 'files'
 													# len(locations) == len(files)
-	return {'files':files, 'exename':'atmosphere_model', 'nprocs':4}
+	return {'files':files, 'exename':'atmosphere_model'}
 
 	"""
 	Return Items (in a dictionary)
 	'files': list of desired files from SL. 
-	'locations': list of paths to place those files.
+	'locations': list of paths in which to place those files.
 	'exename': name of executable the test would like to use (will be linked into the testing sandbox).
-	'nprocs': max number of MPI tasks this test may use at any given time.
 	"""
 
 def test(tparams, res):
@@ -82,7 +84,7 @@ def test(tparams, res):
 	#myRun.runModelNonblocking() #returns immediately, model run happening in background
 	#myRun.runModelBlocking() #returns when model run is finished
 	e = myRun.dummyModelRun('success') # As an example, sets the result as if a successful model run occured
-	while not myRun.is_finished():
+	while not myRun.is_finished(): # ex. wait for a nonblocking run to finish
 		pass
 	myRun.terminate()
 	print('Finished model run')

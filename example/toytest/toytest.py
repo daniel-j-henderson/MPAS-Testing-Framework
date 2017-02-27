@@ -1,9 +1,20 @@
 import os, sys, time
 
+"""
+This 'toytest' demonstrates a blocking and non-blocking model run going at the same time. We
+use a dummy 'toy' program instead of MPAS for testing purposes. The code for this toy program 
+can be found in the examples folder, or really any toy program that can take any number of MPI
+tasks will do. 
+
+The 'toytest' directory should be placed one level up, with all the other tests.
+The 'toy' executable should be placed in the 'src_dir'. 
+"""
+
+
 nprocs = 7
 
 def setup(tparams):
-	return {'exename':'toy', 'nprocs':7}
+	return {'exename':'toy'}
 
 def test(tparams, res):
 	env = tparams['env']
@@ -26,6 +37,7 @@ def test(tparams, res):
 
 	cwd = os.getcwd()
 
+	# Prepare directories for each of the model runs
 	dirA = cwd + '/A'
 	dirB = cwd + '/B'
 	os.system('mkdir '+dirA)
@@ -35,25 +47,23 @@ def test(tparams, res):
 	os.chdir('../B')
 	os.system('ln -s ../toy .')
 	os.chdir('..')
+
+	# Call the modelRun object constructors
 	A = utils.modelRun(dirA, 'toy', 4, env, add_lsfoptions={'-W':'0:01', '-e':'run.err', '-o':'run.out'})
 	B = utils.modelRun(dirB, 'toy', 3, env, add_lsfoptions={'-W':'0:01', '-e':'run.err', '-o':'run.out'})
+	# Run the toy model in nonblocking mode. Returns immediately.
 	A.runModelNonblocking()
 	while not A.has_started():
 		pass
 	print('A has started')
+	# Run the toy model in blocking mode. Returns when run is finished.
 	B.runModelBlocking()
-#	while not B.has_started():
-#		pass
 	print('B has finished')
 	#B = utils.runModelNonblocking(dirB, 'toy', 3, env, cwd, add_lsfoptions={'-W':'0:01', '-e':'run.err', '-o':'run.out'})
 	#while not B.has_started():
 #		pass
 	#time.sleep(.2)
 	#print('Both runs have started')
-	#import multiprocessing
-	#while not (A.is_finished() and B.is_finished()):
-	#	print('Waiting...'+str(len(multiprocessing.active_children())))
-#		time.sleep(1)
 
 #	while not A.is_finished() or not B.is_finished():
 	while not A.is_finished():
@@ -70,14 +80,8 @@ def test(tparams, res):
 	ea = A.get_result()
 	eb = B.get_result()
 
-#	res.set('success', eb.get('completed'))
-#	res.set('errcode', eb.get('err_code'))
 	res.set('success', ea.get('completed') and eb.get('completed'))
 	res.set('err_code', (ea.get('err_code'), eb.get('err_code')))
 
-	#e = utils.runModelBlocking(test_dir, 'toy', 4, env, add_lsfoptions={'-K':'', '-W':'0:01', '-e':'run.err', '-o':'run.out'})
-	# = (True, 0)
-	#res.set('success', e[0])	
-	#res.set('errcode', e[1])
 	res.set('completed', True)
 	return res
