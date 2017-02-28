@@ -399,7 +399,7 @@ def compile(src_dir, core, target, clean=False):
 # The following 4 methods are utilities for the test writer to utilize.
 #
 
-def compareFiles(a, b, env):
+def compareFiles(a, b, env, ignore=[]):
 	"""
 	Compares netcdf files 'a' and 'b' on the environment 'env' and returns a result containing info about any differences found.
 	a, b
@@ -407,6 +407,9 @@ def compareFiles(a, b, env):
 		content: absolute filepath of each netcdf file to be compared
 	env
 		type: Environment object
+	ignore:
+		type: list
+		content: names (strings) of fields for which we need not compare the 2 files. Optional.
 	return
 		type: Result object
 		content:
@@ -442,6 +445,8 @@ def compareFiles(a, b, env):
 	f2 = nc.Dataset(b, 'r')
 
 	for k in f1.variables.keys():
+		if k in ignore:
+			continue
 		if k not in f2.variables:
 			print('compareFiles: Element '+k+' is in '+f1+' but not '+f2)
 			continue

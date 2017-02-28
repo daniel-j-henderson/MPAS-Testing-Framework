@@ -12,6 +12,7 @@ utils = None
 env = None
 
 nprocs = 4
+dependencies=['comptest']
 
 def setup(tparams):
 	# set up any preconditions for the test

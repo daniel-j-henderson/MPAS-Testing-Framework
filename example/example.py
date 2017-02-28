@@ -1,9 +1,11 @@
 import os, sys
 
 # 'nprocs': max number of MPI tasks this test may use at any given time.
-nprocs = 4
 # 'compatible_environments': list of environments this test can run on. Optional. default: all.
-['all']
+# 'dependencies': list, the names of any specific tests which must be performed before this test.
+nprocs = 4
+compatible_environments = ['all']
+
 
 def setup(tparams):
 	#return the name of the executable you want (it will be linked into your testing sandbox) 

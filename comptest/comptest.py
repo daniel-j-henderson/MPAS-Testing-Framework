@@ -31,6 +31,7 @@ def test(tparams, res):
 
 	# Compile the MPAS source code (used by all tests, not a 'sandbox')
 	src_dir = tparams['src_dir']
+	
 	r = utils.compile(src_dir, 'atmosphere', 'ifort')
 	
 	# Returns 0 if successfull. You may need to clean the code if the first try fails

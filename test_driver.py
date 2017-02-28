@@ -220,7 +220,7 @@ for group_name, test_arr in tests.items():
 			continue
 
 		try:
-			if env.get('name') not in mod.compatible_environments or 'all' not in mod.compatible_environments:
+			if env.get('name') not in mod.compatible_environments and 'all' not in mod.compatible_environments:
 				print('The '+subdir+' test is not compatible with this environment ('+env.get('name')+')')
 				continue
 		except AttributeError:
@@ -235,6 +235,10 @@ for group_name, test_arr in tests.items():
 		managers[subdir].start()
 		r = managers[subdir].Result()
 		unfinished_tests.append(testProcess(func=mod.test, setup=mod.setup, nprocs=mod.nprocs, initpath=test_dir, name=subdir, result=r, group=group_name))
+		try:
+			unfinished_tests[-1].dependencies = mod.dependencies
+		except AttributeError:
+			pass
 
 
 #
@@ -255,6 +259,34 @@ while unfinished_tests:
 			tests_in_progress.remove(t)
 	if procs_in_use < total_procs:
 		for t in unfinished_tests:
+			try:
+				
+				depends = t.dependencies
+				if len(finished_tests) > 0:
+					finished = [test.get_name() for test in finished_tests]
+				else:
+					finished = []
+				if len(unfinished_tests) > 0:
+					unfinished = [test.get_name() for test in unfinished_tests]
+				else:
+					unfinished = []
+				if len(tests_in_progress) > 0:
+					inprogress = [test.get_name() for test in tests_in_progress]
+				else:
+					inprogress = []
+				ready = True
+				for dep in depends:
+					if dep not in finished:
+						if dep not in unfinished and dep not in inprogress:
+							print('Test '+t.get_name()+' depends on a test which we are not testing, so it will be skipped.')
+							unfinished_tests.remove(t)
+						ready = False
+						continue
+				if not ready:
+					continue
+			except AttributeError:
+				pass
+
 			if t.get_num_procs() <= total_procs - procs_in_use:
 				procs_in_use += t.get_num_procs()
 				tests_in_progress.append(t)
