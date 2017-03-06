@@ -14,6 +14,7 @@ from __future__ import print_function
 import os, sys
 import importlib as ilib
 import pkgutil
+from distutils import spawn
 import threading
 import datetime
 import multiprocessing
@@ -86,6 +87,20 @@ class testProcess(multiprocessing.Process):
 
 	def get_group(self):
 		return self.group
+
+
+#
+#
+# Check for any necessary executables
+#
+#
+
+if not spawn.find_executable('pdflatex'):
+	print("The executable 'pdflatex' could not be found, so a pdf report of test results cannot be made. If you would like to see a basic results printout on the screen, or generate the '.tex.' file for reference/future use, continue. Would you like to continue?")
+	choice = raw_input('y/n: ')
+	if choice in ['n', 'N', 'no', 'NO']:
+		os._exit(4)
+
 
 #
 #
@@ -353,7 +368,9 @@ os.chdir(result_dir)
 f = open(tfname, 'w')
 utils.writeReportTex(f, results)
 f.close()
-os.system('pdflatex -halt-on-error -interaction=batchmode '+tfname)
+if spawn.find_executable('pdflatex'):
+	os.system('pdflatex -halt-on-error -interaction=batchmode '+tfname)
+	os.system('rm *.aux *.log *.tex')
 os.chdir(popdir)
 
 
