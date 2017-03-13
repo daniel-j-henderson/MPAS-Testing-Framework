@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<environment name="yellowstone" batchsystem="LSF" modules="True" LMOD_CMD="/glade/apps/opt/lmod/lmod/libexec/lmod" pathSL="/glade/scratch/hendersn/Standard-Library/"> 
+<environment name="yellowstone" batchsystem="LSF" max_cores="8" modules="True" LMOD_CMD="/glade/apps/opt/lmod/lmod/libexec/lmod" pathSL="/glade/scratch/hendersn/Standard-Library/"> 
 	<lsf_option name="-P" value="P64000101"/>
 	<lsf_option name="-q" value="regular"/>
 	<modset name="base">
@@ -8,12 +8,12 @@
 		<module name="python"/>
 		<module name="all-python-libs"/>
 	</modset>
-	<modset name="gnu" version="default">
+	<modset name="gnu">
 		<module name="gnu"/>
 		<module name="netcdf-mpi"/>
 		<module name="pnetcdf"/>
 	</modset>
-	<modset name="intel">
+	<modset name="intel" default="True" compiler="ifort">
 		<module name="intel">
 			<version v="15.0.1"/>
 			<version v="12.1.5"/>

@@ -63,11 +63,12 @@ class testProcess(multiprocessing.Process):
 	def run(self):
 		
 		import time
+		import datetime as dt
 		os.chdir(self.cwd)
 		t = time.time()
 		self.myTest(self.tparams, self.result)
 		t = time.time() - t
-		self.result.set('Elapsed Time', round(t, 3))
+		self.result.set('Elapsed Time (hh:mm:ss)', str(dt.timedelta(seconds=round(t))))
 		self.finished = True
 
 	def get_num_procs(self):
@@ -140,12 +141,24 @@ if env.get('modules'):
 	env.set('LMOD_CMD', root.get('LMOD_CMD'))
 for modset in root.findall('modset'):
 	env.add_modset(modset.get('name'), modset)
+	if modset.get('default') in ['true', 'True', 'TRUE']:
+		env.set('default_build_env', modset.get('name'))
+		env.set('default_build_target', modset.get('compiler'))
+if not env.get('default_build_env'):
+	env.set('default_build_env', 'intel')
+	env.set('default_build_target', 'ifort')
 if not env.contains_modset('base'):
 	print('Environment XML file must contain base modset.')
 	os._exit(1)	
 if root.get('PYTHONPATH'):
 	sys.path.append(root.get('PYTHONPATH'))
 env.mod_reset('base')
+print('reset to base')
+env.module('list')
+env.mod_reset(env.get('default_build_env'))
+print('reset to default')
+env.module('list')
+os._exit(1)
 
 # Depending on the batch system, put the necessary options (things like
 # project codes or queue names) in the environment object in a dict
@@ -155,22 +168,22 @@ if root.get('batchsystem') == 'LSF':
 	for lsf_option in root.findall('lsf_option'):
 		options[lsf_option.get('name')] = lsf_option.get('value')
 	env.set('lsf_options', options)
-
+if root.get('max_cores'):
+	total_procs = int(root.get('max_cores'))
 
 env.set('utils', utils)
 env.set('nc', nc)
 env.set('np', np)
 
-total_procs = 8
 try:
 	i = cmdargs.index('-n')
 	total_procs = int(cmdargs[i+1])
 	cmdargs.pop(i+1)
 	cmdargs.pop(i)
 except IndexError:
-	print("Please provide the max number of cores you'd like to run the reg tests on.")
+	pass
 except ValueError:
-	print("Please provide the max number of cores you'd like to run the reg tests on.")
+	pass
 print('Max Cores: '+str(total_procs))
 	
 try:
@@ -322,11 +335,19 @@ while unfinished_tests:
 				os.chdir(popdir)
 
 				if 'exename' in prec:
-					exename = prec['exename']
-					if not os.path.exists(src_dir+'/'+exename):
-						print(exename+' does not exist in '+src_dir)
-						os._exit(1)
-					os.system('ln -s '+src_dir+'/'+exename+' '+test_dir)	
+					exenames = prec['exename']
+					if type(exenames) != type([]):
+						exenames = [exenames]
+					for exename in exenames:
+						if not os.path.exists(src_dir+'/'+exename):
+							env.mod_reset(env.get('default_build_env'))
+							e = utils.compile(src_dir, exename.replace('_model', ''), env.get('default_build_target'))
+							if e:
+								r = utils.compile(src_dir, exename.replace('_model', ''), env.get('default_build_target'), clean=True)
+								if r:
+									print(exename+' does not exist in '+src_dir+' and cannot be built')
+									os._exit(1)
+						os.system('ln -s '+src_dir+'/'+exename+' '+test_dir)	
 
 				if 'files' in prec:
 					files = prec['files']

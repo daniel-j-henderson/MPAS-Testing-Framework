@@ -49,7 +49,6 @@ class Result:
 			return False
 
 
-
 class Environment:
 	"""
 	Environment class
@@ -119,6 +118,11 @@ class Environment:
 				if modname in versions: # if a version was requested, append it to the modname
 					if versions[modname] in [c.get('v') for c in mod]:
 						modname = modname+'/'+versions[modname]
+					elif len(mod) > 0:
+						modname = modname+'/'+mod[0].get('v')
+				elif len(mod) > 0:
+					modname = modname+'/'+mod[0].get('v')
+				
 				e = self.module('load', modname)
 				if e:
 					return e
@@ -393,6 +397,7 @@ def compile(src_dir, core, target, clean=False):
 		if r != 0:
 			return r
 	r = os.system('make '+target+' CORE='+core)
+	os.chdir(popdir)
 	return r
 
 #
@@ -455,10 +460,15 @@ def compareFiles(a, b, env, ignore=[]):
 			i = 0
 			n = 0
 			rms = 0
-			for i in range(0, len(f1.variables[k][:])):
-				if f1.variables[k][i] != f2.variables[k][i]:
+			a = np.ndarray.flatten(f1.variables[k][:])
+			b = np.ndarray.flatten(f2.variables[k][:])
+			if len(a) != len(b):
+				print('Error: 2 comparable fields are dimensioned differently')
+				os._exit(5)
+			for i in range(0, len(a)):
+				if a[i] != b[i]:
 					n += 1
-					rms += (f1.variables[k][i] - f2.variables[k][i])**2
+					rms += (a[i] - b[i])**2
 			rms = rms / float(n)
 			rms = rms**.5
 			r.attributes['rms_error'].append(rms)
