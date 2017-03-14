@@ -153,12 +153,6 @@ if not env.contains_modset('base'):
 if root.get('PYTHONPATH'):
 	sys.path.append(root.get('PYTHONPATH'))
 env.mod_reset('base')
-print('reset to base')
-env.module('list')
-env.mod_reset(env.get('default_build_env'))
-print('reset to default')
-env.module('list')
-os._exit(1)
 
 # Depending on the batch system, put the necessary options (things like
 # project codes or queue names) in the environment object in a dict
