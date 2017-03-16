@@ -23,17 +23,6 @@ import multiprocessing.managers as mm
 
 utils = ilib.import_module('utils.utils')
 
-if pkgutil.find_loader('netCDF4'):
-	nc = ilib.import_module('netCDF4')
-	print("Found netCDF module")
-else:
-	nc = None
-if pkgutil.find_loader('numpy'):
-	np = ilib.import_module('numpy')
-	print("Found numpy module")
-else:
-	np = None
-
 #
 #
 # Class for the process objects for each test.
@@ -151,6 +140,7 @@ if not env.contains_modset('base'):
 	print('Environment XML file must contain base modset.')
 	os._exit(1)	
 if root.get('PYTHONPATH'):
+	os.environ['PYTHONPATH'] = root.get('PYTHONPATH')
 	sys.path.append(root.get('PYTHONPATH'))
 env.mod_reset('base')
 
@@ -164,6 +154,17 @@ if root.get('batchsystem') == 'LSF':
 	env.set('lsf_options', options)
 if root.get('max_cores'):
 	total_procs = int(root.get('max_cores'))
+
+if pkgutil.find_loader('netCDF4'):
+	nc = ilib.import_module('netCDF4')
+	print("Found netCDF module")
+else:
+	nc = None
+if pkgutil.find_loader('numpy'):
+	np = ilib.import_module('numpy')
+	print("Found numpy module")
+else:
+	np = None
 
 env.set('utils', utils)
 env.set('nc', nc)

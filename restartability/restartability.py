@@ -12,7 +12,7 @@ utils = None
 env = None
 
 nprocs = 4
-dependencies=['comptest']
+#dependencies=['comptest']
 
 def setup(tparams):
 	# set up any preconditions for the test
@@ -40,6 +40,15 @@ def test(tparams, res):
 		return res
 	if not utils:
 		print('No utils module in test environment, quitting Restartability test')
+		return res
+
+	if not env.get('nc'):
+		print('No netCDF module, quitting Restartability test')
+		res.set('err_msg', 'No netCDF module, could not run test')
+		return res
+	if not env.get('np'):
+		print('No numpy module, quitting Restartability test')
+		res.set('err_msg', 'No numpy module, could not run test')
 		return res
 
 	# Set up all the directories we'll use and fill them with necessary files
@@ -75,8 +84,10 @@ def test(tparams, res):
 	A.runModelNonblocking()
 	
 	restart_filename = 'restart.2010-10-24_00.00.00.nc'
-	while restart_filename not in os.listdir(rundirA):
+	checkfor_filename = 'history.2010-10-24_06.00.00.nc'
+	while checkfor_filename not in os.listdir(rundirA):
 		pass
+	
 	os.system('ln -s '+rundirA+'/restart.2010-10-24_00.00.00.nc '+rundirB)
 
 	B.runModelNonblocking()
