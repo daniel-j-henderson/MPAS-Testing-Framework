@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<environment name="mmm" machine="cocobolo" max_cores="8" batchsystem="none" modules="True" LMOD_CMD="/usr/local/lmod/lmod/libexec/lmod" pathSL="/sysdisk2/hendersn/Standard-Library/">
+	<modset name="base">
+		<module name="ncarenv"/>
+		<module name="ncarbinlibs"/>
+		<module name="gnu"/>
+		<module name="ncarcompilers"/>
+		<module name="netcdf"/>
+		<module name="mpich"/>
+		<module name="pnetcdf">
+		</module>
+		<module name="pio"/>
+	</modset>
+	<modset name="gnu" default="True" compiler="gfortran">
+		<module name="gnu"/>
+		<module name="ncarcompilers"/>
+		<module name="netcdf"/>
+		<module name="mpich"/>
+		<module name="pnetcdf">
+		</module>
+		<module name="pio"/>
+	</modset>
+	<modset name="intel" compiler="ifort">
+		<module name="intel">
+			<version v="16.0.1"/>
+		</module>
+		<module name="ncarcompilers"/>
+		<module name="netcdf"/>
+		<module name="mpich"/>
+		<module name="pnetcdf">
+			<version v="1.5.0"/>
+		</module>
+		<module name="pio"/>
+	</modset>
+</environment>
+

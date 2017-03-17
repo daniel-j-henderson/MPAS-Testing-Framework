@@ -20,6 +20,15 @@ import datetime
 import multiprocessing
 import xml.etree.ElementTree as ET
 import multiprocessing.managers as mm
+import argparse
+
+parser = argparse.ArgumentParser(description="\n\n************** MPAS Regression Testing Framework **************\n\nThis testing framework runs selected tests from a suite. A folder called \nregtest.$TIMESTAMP$ will be made in this directory with test files/results.", epilog='For more information, visit the repository on Github and read the README.\nhttps://github.com/daniel-j-henderson/MPAS-Testing-Framework\n\n***************************************************************', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('names', nargs='+',	help="The test/group names; that is, the names of every test \nor test group (see Tests.xml) you'd like to run. Required")
+parser.add_argument('-n', type=int, metavar='NPROCS', help="The maximum number of processors to be used at any \ngiven time during testing")
+parser.add_argument('-env', metavar="Environmnent", 	help="Explicit name/path of the XML file that defines the testing \nenvironmnt, like an Environment.xml, yellowstone.xml, etc. \nDefault: 'Environment.xml'")
+parser.add_argument('-src', metavar="MPAS_SRC_DIR", 	help="The relative path to the directory containing the MPAS code \nto be tested. This is the directory that will be \ncompiled/executables will be gathered from. If not specified, \nthe test_driver.py must be launched from within the source \ncode directory. \nDefault: present working directory")
+args = vars(parser.parse_args())
 
 utils = ilib.import_module('utils.utils')
 
@@ -102,20 +111,11 @@ fnames = os.listdir('.')
 config_file = None
 cmdargs = sys.argv[:]
 
-try:
-	i = cmdargs.index('-env')
-	config_file = cmdargs[i+1]
-	print('config file == '+config_file)
-	cmdargs.pop(i+1)
-	cmdargs.pop(i)
-except IndexError:
-	if 'Environment.xml' in fnames:
-		config_file = 'Environment.xml'
-except ValueError:
-	if 'Environment.xml' in fnames:
-		config_file = 'Environment.xml'
-
-if not config_file:
+if args['env']:
+	config_file = args['env']
+elif 'Environment.xml' in fnames:
+	config_file = 'Environment.xml'
+else:
 	print('Please provide an environment configuration file in xml form.')
 	os._exit(1)
 
@@ -170,29 +170,13 @@ env.set('utils', utils)
 env.set('nc', nc)
 env.set('np', np)
 
-try:
-	i = cmdargs.index('-n')
-	total_procs = int(cmdargs[i+1])
-	cmdargs.pop(i+1)
-	cmdargs.pop(i)
-except IndexError:
-	pass
-except ValueError:
-	pass
+if args['n']:
+	total_procs = args['n']
 print('Max Cores: '+str(total_procs))
 	
-try:
-	i = cmdargs.index('-src')
-	src_dir = cmdargs[i+1]
-	popdir = os.getcwd()
-	os.chdir(src_dir)
-	src_dir = os.getcwd()
-	os.chdir(popdir)
-	cmdargs.pop(i+1)
-	cmdargs.pop(i)
-except IndexError:
-	src_dir = os.getcwd()
-except ValueError:
+if args['src']:
+	src_dir = args['src']
+else:
 	src_dir = os.getcwd()
 
 pwd = os.getcwd()
