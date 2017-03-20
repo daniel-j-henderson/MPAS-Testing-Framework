@@ -19,8 +19,8 @@ import threading
 import datetime
 import multiprocessing
 import xml.etree.ElementTree as ET
-import multiprocessing.managers as mm
 import argparse
+from utils.testProcess import ResultManager, testProcess
 
 parser = argparse.ArgumentParser(description="\n\n************** MPAS Regression Testing Framework **************\n\nThis testing framework runs selected tests from a suite. A folder called \nregtest.$TIMESTAMP$ will be made in this directory with test files/results.", epilog='For more information, visit the repository on Github and read the README.\nhttps://github.com/daniel-j-henderson/MPAS-Testing-Framework\n\n***************************************************************', formatter_class=argparse.RawTextHelpFormatter)
 
@@ -32,60 +32,6 @@ args = vars(parser.parse_args())
 
 utils = ilib.import_module('utils.utils')
 
-#
-#
-# Class for the process objects for each test.
-# The 'myTest' member is be a test() method from a test module.
-#
-#
-
-class ResultManager(mm.BaseManager):
-	pass
-
-ResultManager.register('Result', utils.Result)
-
-class testProcess(multiprocessing.Process):
-   
-	def __init__(self, func=None, setup=None, nprocs=1, tparams={}, initpath='.', name='', result=None, group=None):
-		multiprocessing.Process.__init__(self)
-		self.myTest = func
-		self.setup = setup
-		self.group = group
-		self.num_procs = nprocs
-		self.finished = False
-		self.tparams = tparams
-		self.cwd = initpath
-		self.name = name
-		self.result = result	
-
-	def run(self):
-		
-		import time
-		import datetime as dt
-		os.chdir(self.cwd)
-		t = time.time()
-		self.myTest(self.tparams, self.result)
-		t = time.time() - t
-		self.result.set('Elapsed Time (hh:mm:ss)', str(dt.timedelta(seconds=round(t))))
-		self.finished = True
-
-	def get_num_procs(self):
-		return self.num_procs
-
-	def get_cwd(self):
-		return self.cwd	
-
-	def get_name(self):
-		return self.name
-	
-	def is_finished(self):
-		return self.finished
-
-	def get_result(self):
-		return self.result
-
-	def get_group(self):
-		return self.group
 
 
 #
