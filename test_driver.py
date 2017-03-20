@@ -185,19 +185,20 @@ SMARTS_dir = os.path.dirname(os.path.realpath( __file__ ))
 tests = {}
 root = ET.parse(SMARTS_dir+'/Tests.xml').getroot()
 for el in root:
-	if el.tag == 'test_group' and el.get('name') in cmdargs:
+	if el.tag == 'test_group' and el.get('name') in args['names']:
 		group_name = el.get('name')
 		tests[group_name] = []
 		for t in el:
 			tests[group_name].append(t.get('name'))
 for key in tests:
-	if key in cmdargs:
-		cmdargs.remove(key)
+	if key in args['names']:
+		args['names'].remove(key)
 
 if len(cmdargs) > 1:
 	tests['misc'] = []
-	for i in range(1,len(cmdargs)):
-		tests['misc'].append(cmdargs[i])
+	for i in range(len(args['names'])):
+		tests['misc'].append(args['names'][i])
+
 
 
 results = []
@@ -326,7 +327,7 @@ while unfinished_tests:
 								if r:
 									print(exename+' does not exist in '+src_dir+' and cannot be built')
 									os._exit(1)
-						os.system('ln -s '+src_dir+'/'+exename+' '+test_dir)	
+						os.system('cp '+src_dir+'/'+exename+' '+test_dir)	
 
 				if 'files' in prec:
 					files = prec['files']
