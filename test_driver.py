@@ -146,12 +146,17 @@ env.mod_reset('base')
 
 # Depending on the batch system, put the necessary options (things like
 # project codes or queue names) in the environment object in a dict
-if root.get('batchsystem') == 'LSF':
-	env.set('batchsystem', 'LSF')
+if root.get('type') == 'LSF':
+	env.set('type', utils.Environment.ENVLSF)
 	options = {}
 	for lsf_option in root.findall('lsf_option'):
 		options[lsf_option.get('name')] = lsf_option.get('value')
 	env.set('lsf_options', options)
+elif root.get('type') == 'PBS':
+	env.set('type', utils.Environment.ENVPBS)
+else:
+	env.set('type', utils.Environment.NONE)
+	
 if root.get('max_cores'):
 	total_procs = int(root.get('max_cores'))
 

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<environment name="mmm" machine="cocobolo" max_cores="8" batchsystem="none" modules="True" LMOD_CMD="/usr/local/lmod/lmod/libexec/lmod" pathSL="/sysdisk2/hendersn/Standard-Library/">
+<environment name="cocobolo" max_cores="8"  modules="True" LMOD_CMD="/usr/local/lmod/lmod/libexec/lmod" pathSL="/sysdisk2/hendersn/Standard-Library/">
 	<modset name="base">
 		<module name="ncarenv"/>
 		<module name="ncarbinlibs"/>
