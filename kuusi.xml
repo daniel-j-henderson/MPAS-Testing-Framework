@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<environment name="kuusi" max_cores="12" modules="True" LMOD_CMD="/usr/local/lmod/lmod/libexec/lmod" pathSL="/sysdisk1/duda/regtesting/Standard-Library" PYTHONPATH="">
+	<modset name="base">
+		<module name="ncarenv"/>
+		<module name="ncarbinlibs"/>
+	</modset>
+	<modset name="gnu" default="True" compiler="gfortran">
+		<env_var name="PATH" value="/sysdisk1/duda/gcc-5.2.0/bin:/sysdisk1/duda/Thursday_test/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin"/>
+		<env_var name="LD_LIBRARY_PATH" value="/sysdisk1/duda/gcc-5.2.0/lib64:/sysdisk1/duda/Thursday_test/local/lib"/>
+		<env_var name="NETCDF" value="/sysdisk1/duda/Thursday_test/local"/>
+		<env_var name="PNETCDF" value="/sysdisk1/duda/Thursday_test/local"/>
+		<env_var name="PIO" value="/sysdisk1/duda/Thursday_test/local"/>
+	</modset>
+	<modset name="intel" compiler="ifort">
+		<env_var name="PATH" value="/dev/shm/io_intel16/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin"/>
+		<env_var name="LD_LIBRARY_PATH" value="/dev/shm/io_intel16/lib"/>
+		<env_var name="NETCDF" value="/dev/shm/io_intel16"/>
+		<env_var name="PNETCDF" value="/dev/shm/io_intel16"/>
+		<env_var name="PIO" value="/dev/shm/io_intel16/pio-1.9.23"/>
+		<env_var name="MPAS_EXTERNAL_LIBS" value="-L/dev/shm/io_intel16/lib -lhdf5_hl -lhdf5 -ldl -lz"/>
+		<env_var name="MPAS_EXTERNAL_INCLUDES" value="-I/dev/shm/io_intel16/include"/>
+		<module name="intel">
+			<version v="16.0.2"/>
+                </module>
+	</modset>
+	<modset name="pgi" compiler="pgf90">
+		<env_var name="PATH" value="/sysdisk1/duda/pgi-15.5/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin"/>
+		<env_var name="LD_LIBRARY_PATH" value="/sysdisk1/duda/pgi-15.5/lib"/>
+		<env_var name="NETCDF" value="/sysdisk1/duda/pgi-15.5"/>
+		<env_var name="PNETCDF" value="/sysdisk1/duda/pgi-15.5"/>
+		<env_var name="PIO" value="/sysdisk1/duda/pgi-15.5/pio-1.9.23"/>
+		<env_var name="MPAS_EXTERNAL_LIBS" value="-L/sysdisk1/duda/pgi-15.5/lib -lhdf5_hl -lhdf5 -ldl -lz"/>
+		<env_var name="MPAS_EXTERNAL_INCLUDES" value="-I/sysdisk1/duda/pgi-15.5/include"/>
+		<module name="pgi">
+			<version v="16.3"/>
+                </module>
+	</modset>
+
+</environment>
