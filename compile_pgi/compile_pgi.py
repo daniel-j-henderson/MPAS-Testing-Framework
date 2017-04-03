@@ -37,14 +37,29 @@ def test(tparams, res):
 
 	os.system('cp -R '+src_dir+'/src .')
 	os.system('cp -R '+src_dir+'/Makefile .')
+
+	#
+	# First compile the init_atmosphere core
+	#
+	os.system('time make pgi CORE=init_atmosphere > make.init.log 2>&1')
+	if not os.path.isfile('init_atmosphere_model') or not os.path.getsize('init_atmosphere_model') > 1000000:
+		res.set('err_msg', 'PGI build test failed to compile init_atmosphere_model')
+		res.set('err_code', 1)
+		res.set('success', False)
+		res.set('completed', True)
+		return
+
+	#
+	# Then clean and compile the atmosphere core
+	#
 	os.system('make clean CORE=atmosphere > clean.log 2>&1')
-	os.system('time make pgi CORE=atmosphere > make.log 2>&1')
+	os.system('time make pgi CORE=atmosphere > make.model.log 2>&1')
 	if os.path.isfile('atmosphere_model') and os.path.getsize('atmosphere_model') > 1000000:
 		res.set('err_msg', 'PGI build test passed')
 		res.set('err_code', 0)
 		res.set('success', True)
 	else:
-		res.set('err_msg', 'PGI build test failed')
+		res.set('err_msg', 'PGI build test failed to compile atmosphere_model')
 		res.set('err_code', 1)
 		res.set('success', False)
 
