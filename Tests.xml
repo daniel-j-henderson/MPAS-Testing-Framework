@@ -10,4 +10,9 @@
 	<test_group name="basic">
 		<test name="restartability"/>
 	</test_group>
+	<test_group name="release">
+		<test name="compile_gnu"/>
+		<test name="compile_intel"/>
+		<test name="compile_pgi"/>
+	</test_group>
 </all>
