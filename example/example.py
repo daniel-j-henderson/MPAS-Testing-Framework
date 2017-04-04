@@ -71,7 +71,7 @@ def test(tparams, res):
 	
 
 	test_dir = tparams['test_dir'] # file path of testing sandbox, absolute
-	my_dir = tparams['SMARTS_dir']+'/Example' # store any small files you need, e.g. namelists, in here somewhere
+	my_dir = tparams['SMARTS_dir']+'/example' # store any small files you need, e.g. namelists, in here somewhere
 
 	#(completed, err_code) = runAtmosphereModel(dir, exename, ntasks, env, additional_lsf_options, additional_pbs_options)
 	#completed: boolean, signifies whether the function runAtmosphereModel completed or returned early
@@ -92,6 +92,10 @@ def test(tparams, res):
 	print('Finished model run')
 
 	e = myRun.get_result()
+
+	figdir = my_dir+'/figures'	
+	res.set('figures_directory', figdir)
+
 	res.set('success', e.get('completed') and e.get('success'))	
 	res.set('err_code', e.get('err_code'))
 	res.set('err_msg', 'Example test ran fine')

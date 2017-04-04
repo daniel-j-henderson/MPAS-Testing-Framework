@@ -608,6 +608,11 @@ def writeReportTex(f, results):
 			for k, v in r.attributes.items():
 				f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
 			f.write('\\end{tabular}\n')
+		if r.get('figures_directory'):
+			figdir = r.get('figures_directory')
+			print(figdir)
+			for file in os.listdir(r.get('figures_directory')):
+				f.write('\\includegraphics[width=6.5in]{'+figdir+'/'+file+'}\n')
 	f.write('\\end{document}')
 #
 #

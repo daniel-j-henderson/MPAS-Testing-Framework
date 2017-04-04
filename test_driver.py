@@ -265,6 +265,10 @@ while unfinished_tests:
 				prec = t.setup(tparams)
 				os.chdir(popdir)
 
+				if 'modset' in prec:
+					if env.contains_modset(prec['modset']):
+						env.mod_reset(prec['modset'])
+
 				if 'exename' in prec:
 					exenames = prec['exename']
 					if type(exenames) != type([]):
@@ -322,7 +326,7 @@ utils.writeReportTex(f, results)
 f.close()
 if spawn.find_executable('pdflatex'):
 	os.system('pdflatex -halt-on-error -interaction=batchmode '+tfname)
-	os.system('rm *.aux *.log *.tex')
+	#os.system('rm *.aux *.log *.tex')
 os.chdir(popdir)
 
 
