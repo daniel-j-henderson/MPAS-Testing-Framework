@@ -14,5 +14,7 @@
 		<test name="compile_gnu"/>
 		<test name="compile_intel"/>
 		<test name="compile_pgi"/>
+		<test name="static_usgs"/>
+		<test name="static_modis"/>
 	</test_group>
 </all>

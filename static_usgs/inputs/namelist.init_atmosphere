@@ -1,0 +1,32 @@
+&nhyd_model
+    config_init_case = 7
+    config_start_time = '2017-01-01_00:00:00'
+    config_stop_time = '2017-01-01_00:00:00'
+    config_theta_adv_order = 3
+    config_coef_3rd_order = 0.25
+/
+&dimensions
+    config_nvertlevels = 1
+    config_nsoillevels = 1
+    config_nfglevels = 1
+    config_nfgsoillevels = 1
+/
+&data_sources
+    config_geog_data_path = './WPS_GEOG/'
+    config_landuse_data = 'USGS'
+/
+&preproc_stages
+    config_static_interp = true
+    config_native_gwd_static = true
+    config_vertical_grid = false
+    config_met_interp = false
+    config_input_sst = false
+    config_frac_seaice = false
+/
+&io
+    config_pio_num_iotasks = 0
+    config_pio_stride = 1
+/
+&decomposition
+    config_block_decomp_file_prefix = 'x1.40962.graph.info.part.'
+/
