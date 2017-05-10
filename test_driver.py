@@ -326,7 +326,7 @@ utils.writeReportTex(f, results)
 f.close()
 if spawn.find_executable('pdflatex'):
 	os.system('pdflatex -halt-on-error -interaction=batchmode '+tfname)
-	#os.system('rm *.aux *.log *.tex')
+	os.system('rm *.aux *.log *.tex')
 os.chdir(popdir)
 
 
