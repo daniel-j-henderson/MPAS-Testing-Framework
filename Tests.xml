@@ -12,6 +12,7 @@
 	</test_group>
 	<test_group name="release">
 		<test name="compile_gnu"/>
+		<test name="compile_gnu_mtn_wave"/>
 		<test name="compile_intel"/>
 		<test name="compile_pgi"/>
 	</test_group>
