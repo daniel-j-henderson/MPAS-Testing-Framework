@@ -1,0 +1,21 @@
+<streams>
+<immutable_stream name="input"
+                  type="input"
+                  filename_template="x1.40962.grid.nc"
+                  precision="double"
+                  input_interval="initial_only" />
+
+<immutable_stream name="output"
+                  type="output"
+                  filename_template="x1.40962.static_usgs.nc"
+                  packages="initial_conds"
+                  output_interval="initial_only" />
+
+<immutable_stream name="surface"
+                  type="output"
+                  filename_template="x1.40962.sfc_update.nc"
+                  filename_interval="none"
+                  packages="sfc_update"
+                  output_interval="86400" />
+
+</streams>
