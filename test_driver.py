@@ -295,6 +295,7 @@ while unfinished_tests:
 						if utils.retrieveFileFromSL(files[i], locations[i], env):
 							found_files[i] = True
 					tparams['found_files'] = found_files
+					tparams['files'] = files
 
 				t.tparams = tparams
 				tests_in_progress[-1].start()
