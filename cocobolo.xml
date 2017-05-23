@@ -10,6 +10,7 @@
 		<module name="pnetcdf">
 		</module>
 		<module name="pio"/>
+		<module name="ncl"/>
 	</modset>
 	<modset name="gnu" default="True" compiler="gfortran">
 		<module name="gnu"/>
@@ -19,6 +20,7 @@
 		<module name="pnetcdf">
 		</module>
 		<module name="pio"/>
+		<module name="ncl"/>
 	</modset>
 	<modset name="intel" compiler="ifort">
 		<module name="intel">
@@ -31,6 +33,7 @@
 			<version v="1.5.0"/>
 		</module>
 		<module name="pio"/>
+		<module name="ncl"/>
 	</modset>
 </environment>
 

@@ -10,6 +10,7 @@
 		<env_var name="NETCDF" value="/sysdisk1/duda/Thursday_test/local"/>
 		<env_var name="PNETCDF" value="/sysdisk1/duda/Thursday_test/local"/>
 		<env_var name="PIO" value="/sysdisk1/duda/Thursday_test/local"/>
+		<module name="ncl"/>
 	</modset>
 	<modset name="intel" compiler="ifort">
 		<env_var name="PATH" value="/dev/shm/io_intel16/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin"/>
@@ -22,6 +23,7 @@
 		<module name="intel">
 			<version v="16.0.2"/>
                 </module>
+		<module name="ncl"/>
 	</modset>
 	<modset name="pgi" compiler="pgf90">
 		<env_var name="PATH" value="/sysdisk1/duda/pgi-15.5/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin"/>
@@ -34,6 +36,7 @@
 		<module name="pgi">
 			<version v="16.3"/>
                 </module>
+		<module name="ncl"/>
 	</modset>
 
 </environment>
