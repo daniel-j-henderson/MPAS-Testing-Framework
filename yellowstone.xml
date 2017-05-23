@@ -7,11 +7,13 @@
 		<module name="ncarbinlibs"/>
 		<module name="python"/>
 		<module name="all-python-libs"/>
+		<module name="ncl"/>
 	</modset>
 	<modset name="gnu">
 		<module name="gnu"/>
 		<module name="netcdf-mpi"/>
 		<module name="pnetcdf"/>
+		<module name="ncl"/>
 	</modset>
 	<modset name="intel" default="True" compiler="ifort">
 		<module name="intel">
@@ -26,5 +28,6 @@
 			<version v="1.6.0"/>
 		</module>
 		<env_var name="PIO" value="/glade/p/work/duda/pio1_9_19/pio"/>
+		<module name="ncl"/>
 	</modset>
 </environment>

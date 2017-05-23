@@ -18,5 +18,6 @@
 		<test name="static_usgs"/>
 		<test name="static_modis"/>
 		<test name="ideal_mtn_wave"/>
+		<test name="ideal_supercell"/>
 	</test_group>
 </all>

@@ -33,7 +33,12 @@ def test(tparams, res):
 		res.set('err_msg', "In Static/MODIS test(), error resetting to the modset 'gnu'.")
 		res.set('err_code', e)
 		return res
-	
+
+	if not all(tparams['found_files']):
+		not_found = [tparams['files'][i] for i in range(len(tparams['files'])) if not tparams['found_files'][i]]
+		not_found_string = " ".join(not_found)
+		res.set('err_msg', 'In Static/MODIS test(), some required files were not found in the standard library: '+not_found_string)
+		return res
 
 	template_dir = tparams['SMARTS_dir']+'/static_modis'
 	sandbox_dir = tparams['test_dir']
@@ -42,14 +47,8 @@ def test(tparams, res):
 	os.system('ln -s '+exe_dir+'/init_atmosphere_model .')
 	utils.linkAllFiles(template_dir+'/inputs', './')
 
-	#(completed, err_code) = runAtmosphereModel(dir, exename, ntasks, env, additional_lsf_options, additional_pbs_options)
-	#completed: boolean, signifies whether the function runAtmosphereModel completed or returned early
-	#err_code: the return code from the model executable
-	#Note: this function blocks until the model run is complete
-
-	#If your test comes with files like namelists and such, link them in this way
 	myRun = utils.modelRun('./', 'init_atmosphere_model', 1, env, add_lsfoptions={'-W':'1:30', '-e':'run.err', '-o':'run.out'})
-	myRun.runModelNonblocking() #returns immediately, model run happening in background
+	myRun.runModelNonblocking()
 
 	while not (myRun.is_finished()):
 		time.sleep(1)
