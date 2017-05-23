@@ -1,0 +1,20 @@
+<streams>
+<immutable_stream name="input"
+                  type="input"
+                  filename_template="mtn_wave_grid.nc"
+                  input_interval="initial_only" />
+
+<immutable_stream name="output"
+                  type="output"
+                  filename_template="mtn_wave_init.nc"
+                  packages="initial_conds"
+                  output_interval="initial_only" />
+
+<immutable_stream name="surface"
+                  type="output"
+                  filename_template="not_needed_for_mtn_wave"
+                  filename_interval="none"
+                  packages="sfc_update"
+                  output_interval="86400" />
+
+</streams>
