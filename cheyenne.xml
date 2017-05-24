@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<environment name="cheyenne" type="PBS" max_cores="144" modules="True" LMOD_CMD="/glade/u/apps/ch/opt/lmod/7.2.1/lmod/lmod/libexec/lmod" pathSL="/glade/p/mmm/duda/Standard-Library/">
+	<pbs_option name="-A" value="P64000101"/>
+	<pbs_option name="-q" value="regular"/>
+	<modset name="base">
+		<module name="ncarenv"/>
+		<module name="python"/>
+		<module name="numpy"/>
+		<module name="netcdf4-python"/>
+	</modset>
+	<modset name="gnu">
+		<module name="gnu">
+			<version v="6.3.0"/>
+		</module>
+		<module name="mpt"/>
+		<module name="ncarcompilers"/>
+		<module name="netcdf-mpi">
+			<version v="4.4.1.1"/>
+		</module>
+		<module name="pnetcdf">
+			<version v="1.8.0"/>
+		</module>
+		<module name="ncl"/>
+		<env_var name="PIO" value="/glade/p/work/duda/cheyenne/pio-1.9.23-gnu6.3.0"/>
+	</modset>
+	<modset name="intel" default="True" compiler="ifort">
+		<module name="intel">
+			<version v="17.0.1"/>
+		</module>
+		<module name="mpt"/>
+		<module name="ncarcompilers"/>
+		<module name="netcdf-mpi">
+			<version v="4.4.1.1"/>
+		</module>
+		<module name="pnetcdf">
+			<version v="1.8.0"/>
+		</module>
+		<env_var name="PIO" value="/glade/p/work/duda/cheyenne/pio-1.9.23"/>
+	</modset>
+</environment>

@@ -1,7 +1,7 @@
 import os, sys, time
 
 nprocs = 1
-compatible_environments = ['kuusi']
+compatible_environments = ['kuusi','cheyenne']
 
 def setup(tparams):
 
