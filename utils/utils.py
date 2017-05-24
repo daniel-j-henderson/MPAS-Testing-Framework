@@ -607,7 +607,8 @@ def translate(string):
 	
 def writeReportTex(f, results):
 
-	preamble = '\\documentclass[a4paper]{article} \n\\usepackage{longtable} \n\\usepackage{graphicx}\n\\usepackage[T1]{fontenc} \n\\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
+	preamble = '\\documentclass{article} \n\\usepackage{graphicx}\n\\usepackage[top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
+
 	f.write(preamble)
 	f.write('\n')
 	current_group = None
@@ -617,7 +618,7 @@ def writeReportTex(f, results):
 			current_group = t[1]
 		f.write('\\section{'+translate(current_group)+'}\n')
 		if r.attributes:
-			f.write('\\subsection{'+r.get('name')+'}\n')
+			f.write('\\subsection{'+translate(r.get('name'))+'}\n')
 			f.write('\\begin{longtable}{|p{.5\\textwidth} |p{.5\\textwidth} |} \\hline\n')
 			f.write('Result & '+ ('success' if r.get('success') else 'failed') + ' \\\\ \\hline \n')
 			for k, v in r.attributes.items():
