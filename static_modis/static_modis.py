@@ -1,7 +1,7 @@
 import os, sys, time
 
 nprocs=1
-compatible_environments = ['kuusi']
+compatible_environments = ['kuusi','cheyenne']
 dependencies=['compile_gnu']
 
 def setup(tparams):
@@ -47,7 +47,7 @@ def test(tparams, res):
 	os.system('ln -s '+exe_dir+'/init_atmosphere_model .')
 	utils.linkAllFiles(template_dir+'/inputs', './')
 
-	myRun = utils.modelRun('./', 'init_atmosphere_model', 1, env, add_lsfoptions={'-W':'1:30', '-e':'run.err', '-o':'run.out'})
+	myRun = utils.modelRun('./', 'init_atmosphere_model', 1, env, add_lsfoptions={'-W':'1:30', '-e':'run.err', '-o':'run.out'}, add_pbsoptions={'-l walltime=01:30:00':''})
 	myRun.runModelNonblocking()
 
 	while not (myRun.is_finished()):

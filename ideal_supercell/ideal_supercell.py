@@ -1,7 +1,7 @@
 import os, sys, time
 
 nprocs=12
-compatible_environments = ['kuusi']
+compatible_environments = ['kuusi','cheyenne']
 dependencies=['compile_gnu']
 
 def setup(tparams):
@@ -48,9 +48,9 @@ def test(tparams, res):
 	os.system('ln -s '+exe_dir+'/atmosphere_model .')
 
 	utils.linkAllFiles(template_dir+'/inputs', './')
-	init = utils.modelRun('./', 'init_atmosphere_model', 1, env, add_lsfoptions={'-W':'0:30', '-e':'run.err', '-o':'run.out'})
+	init = utils.modelRun('./', 'init_atmosphere_model', 1, env, add_lsfoptions={'-W':'0:30', '-e':'run.err', '-o':'run.out'}, add_pbsoptions={'-l walltime=00:30:00':''})
 	init.runModelBlocking()
-	supercell = utils.modelRun('./', 'atmosphere_model', 12, env, add_lsfoptions={'-W':'0:30', '-e':'run.err', '-o':'run.out'})
+	supercell = utils.modelRun('./', 'atmosphere_model', 12, env, add_lsfoptions={'-W':'0:30', '-e':'run.err', '-o':'run.out'}, add_pbsoptions={'-l walltime=00:30:00':''})
 	supercell.runModelBlocking()
 
 	e_init = init.get_result()
