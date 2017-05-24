@@ -368,7 +368,22 @@ def runModel(dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}):
 
 	elif env.get('type') == Environment.ENVPBS:
 		print('Running on '+env.get('name')+', a PBS system.')
-		cmd = ''
+		args = []
+		pbs_options = env.get('pbs_options')
+		pbs_options['-W'] = 'block=true'
+		pbs_options['-N'] = exename
+		for key, value in pbs_options.items():
+			if key in add_pbsoptions:
+				continue
+			args.append(str(key) + ' ' + str(value))
+		for key, value in add_pbsoptions.items():
+			args.append(str(key) + ' ' + str(value))
+
+		args.append(' -l select=1:ncpus=' + str(n) + ':mpiprocs=' + str(n) + ' ')
+		os.system('echo \'#PBS ' + ' '.join(args) + '\' > script.' + exename)
+		os.system('echo \'mpiexec_mpt ./' + exename + '\' >> script.' + exename)
+		cmd = 'qsub script.' + exename
+		print(cmd)
 
 	elif env.get('name') == 'mmm' or env.get('type') == Environment.NONE:
 		cmd = 'mpirun -n '+str(n)+' ./'+exename
