@@ -100,6 +100,10 @@ if root.get('type') == 'LSF':
 	env.set('lsf_options', options)
 elif root.get('type') == 'PBS':
 	env.set('type', utils.Environment.ENVPBS)
+	options = {}
+	for pbs_option in root.findall('pbs_option'):
+		options[pbs_option.get('name')] = pbs_option.get('value')
+	env.set('pbs_options', options)
 else:
 	env.set('type', utils.Environment.NONE)
 	
