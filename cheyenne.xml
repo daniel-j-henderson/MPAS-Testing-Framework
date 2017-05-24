@@ -8,7 +8,7 @@
 		<module name="numpy"/>
 		<module name="netcdf4-python"/>
 	</modset>
-	<modset name="gnu">
+	<modset name="gnu" compiler="gfortran">
 		<module name="gnu">
 			<version v="6.3.0"/>
 		</module>

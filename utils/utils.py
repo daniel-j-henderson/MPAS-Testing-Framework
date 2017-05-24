@@ -607,7 +607,7 @@ def translate(string):
 	
 def writeReportTex(f, results):
 
-	preamble = '\\documentclass[a4paper]{article} \n\\usepackage[english]{babel} \n\\usepackage[utf8x]{inputenc} \n\\usepackage{graphicx}\n\\usepackage[T1]{fontenc} \n\\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
+	preamble = '\\documentclass[a4paper]{article} \n\\usepackage{longtable} \n\\usepackage{graphicx}\n\\usepackage[T1]{fontenc} \n\\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} \n\\title{MPAS Testing Framework Test Results} \n\\begin{document} \n\\maketitle'
 	f.write(preamble)
 	f.write('\n')
 	current_group = None
@@ -618,16 +618,21 @@ def writeReportTex(f, results):
 		f.write('\\section{'+translate(current_group)+'}\n')
 		if r.attributes:
 			f.write('\\subsection{'+r.get('name')+'}\n')
-			f.write('\\begin{tabular}{|p{.3\\textwidth} |p{.7\\textwidth} |} \\hline\n')
+			f.write('\\begin{longtable}{|p{.5\\textwidth} |p{.5\\textwidth} |} \\hline\n')
 			f.write('Result & '+ ('success' if r.get('success') else 'failed') + ' \\\\ \\hline \n')
 			for k, v in r.attributes.items():
 				f.write(translate(str(k)) + ' & ' + translate(str(v)) + ' \\\\ \\hline \n')
-			f.write('\\end{tabular}\n')
-		if r.get('figures_directory'):
-			figdir = r.get('figures_directory')
-			print(figdir)
-			for file in os.listdir(r.get('figures_directory')):
-				f.write('\\includegraphics[width=6.5in]{'+figdir+'/'+file+'}\n')
+			if r.get('figures_directory'):
+				figdir = r.get('figures_directory')
+				fnames = os.listdir(figdir)
+				for i in range(len(fnames)):
+					if i%2 == 0:
+						f.write('\\multicolumn{1}{|c}{\\includegraphics[width=3in]{'+figdir+'/'+fnames[i]+'}} & ')
+					else:
+						f.write('\\multicolumn{1}{c|}{\\includegraphics[width=3in]{'+figdir+'/'+fnames[i]+'}} \\\\ \\hline \n')
+				if len(fnames) % 2 == 1:
+					f.write('\\\\ \\hline \n')		
+			f.write('\\end{longtable}\n')
 	f.write('\\end{document}')
 #
 #
