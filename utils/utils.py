@@ -380,7 +380,8 @@ def runModel(dir, exename, n, env, add_lsfoptions={}, add_pbsoptions={}):
 			args.append(str(key) + ' ' + str(value))
 
 		args.append(' -l select=1:ncpus=' + str(n) + ':mpiprocs=' + str(n) + ' ')
-		os.system('echo \'#PBS ' + ' '.join(args) + '\' > script.' + exename)
+		os.system("echo '#!/bin/tcsh' > script." + exename)
+		os.system('echo \'#PBS ' + ' '.join(args) + '\' >> script.' + exename)
 		os.system('echo \'mpiexec_mpt ./' + exename + '\' >> script.' + exename)
 		cmd = 'qsub script.' + exename
 		print(cmd)

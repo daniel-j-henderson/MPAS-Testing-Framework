@@ -24,7 +24,7 @@ def setup(tparams):
 	files = ['x1.2562.init.nc', 'x1.2562.graph.info.part.4', 'x1.2562.init.nc', 'x1.2562.graph.info.part.4']
 	locations = [rundirA, rundirA, rundirB, rundirB]
 
-	return {'exename':'atmosphere_model', 'files':files, 'locations':locations}
+	return {'modset':'gnu', 'exename':'atmosphere_model', 'files':files, 'locations':locations}
 
 
 
@@ -72,11 +72,11 @@ def test(tparams, res):
 
 	# Prepare the 2-day run (A) and the restart run (B) model run objects
 	utils.linkAllFiles(my_config_files_A, rundirA)
-	A = utils.modelRun(rundirA, 'atmosphere_model', nprocs, env, add_lsfoptions={'-W':'0:05', '-e':'run.err', '-o':'run.out'})
+	A = utils.modelRun(rundirA, 'atmosphere_model', nprocs, env, add_lsfoptions={'-W':'0:05', '-e':'run.err', '-o':'run.out'}, add_pbsoptions={'-l':'walltime=5:00', '-N':'run'})
 							 #directory in which to run the model, num mpi tasks, env object, additional lsf options
 
 	utils.linkAllFiles(my_config_files_B, rundirB)
-	B = utils.modelRun(rundirB, 'atmosphere_model', nprocs, env, add_lsfoptions={'-W':'0:05', '-e':'run.err', '-o':'run.out'})
+	B = utils.modelRun(rundirB, 'atmosphere_model', nprocs, env, add_lsfoptions={'-W':'0:05', '-e':'run.err', '-o':'run.out'}, add_pbsoptions={'-l':'walltime=5:00', '-N':'run'})
 
 	# Start the 2day run in non-blocking mode
 	# spin on the existence of the restart file
@@ -85,7 +85,7 @@ def test(tparams, res):
 	
 	restart_filename = 'restart.2010-10-24_00.00.00.nc'
 	checkfor_filename = 'history.2010-10-24_06.00.00.nc'
-	while checkfor_filename not in os.listdir(rundirA):
+	while checkfor_filename not in os.listdir(rundirA) and not A.is_finished():
 		pass
 	
 	os.system('ln -s '+rundirA+'/restart.2010-10-24_00.00.00.nc '+rundirB)
